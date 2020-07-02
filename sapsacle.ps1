@@ -13,6 +13,10 @@ param(
     [string] $saplocation = '',
     [Parameter(Mandatory = $true)]
     [string]$customimageid,
+    [Parameter(Mandatory = $true)]
+    [string]$SAPSystemID,
+    [Parameter(Mandatory = $true)]
+    [string]$SAPImageHostname,
     [string] $vmize = 'Standard_D2s_v3',
     [string] $AzureEnvironment = 'AzureCloud',
     [int] $CurrentAppServerCount = '1',
@@ -84,6 +88,21 @@ for ($i = $CurrentAppServerCount+1; $i -le $TargetAppServerCount; $i++) {
         -Location $saplocation -VM $vmConfig
 
     Write-Output "App server $appservername creation completed"
+
+#Installing app server
+    $scripturi = "https://raw.githubusercontent.com/karthikvenkat17/sapautoscaling/master/appserver_install.sh?token=AKRWGXXGQEV4QBSDVS5JYRC67WQZG"
+    $Settings = @{"fileUris" = @($scripturi); "commandToExecute" = "./appserver_install.sh $SAPSystemID $SAPImageHostname $appservername"};
+    Set-AzVMExtension `
+        -ResourceGroupName $SAPResourceGroupName `
+        -Location $saplocation `
+        -VMName $appservername `
+        -Name "CustomScript" `
+        -Publisher "Microsoft.Azure.Extensions" `
+        -ExtensionType "CustomScript" `
+        -TypeHandlerVersion "2.0" `
+        -Settings $Settings 
+
+    Write-Output "SAP app server $appservername installed successfully"
 }   
 Write-Output "SAP app servers scaled from $CurrentAppServerCount to $TargetAppServerCount"
 

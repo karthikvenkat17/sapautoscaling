@@ -48,6 +48,8 @@ mv .dbenv_${orighostname}.sh .dbenv_${newhostname}.sh
 mv .dbenv_${orighostname}.csh .dbenv_${newhostname}.csh
 mv .dbsrc_${orighostname}.sh .dbsrc_${newhostname}.sh
 mv .dbsrc_${orighostname}.csh .dbsrc_${newhostname}.csh
+mv ${homedir}/.hdb/${orighostname} ${homedir}/.hdb/${newhostname}
+
 
 ##Renaming sapservices file##
 cp -pr /usr/sap/sapservices /usr/sap/sapservices.old
@@ -59,6 +61,12 @@ sed -i 's/'$orighostname'/'$newhostname'/g' /sapmnt/${SID}/profile/${SID}_D00_${
 sed -i 's/'$ORIGHOSTNAME'/'$NEWHOSTNAME'/g' /sapmnt/${SID}/profile/${SID}_D00_${newhostname}
 
 ##Starting SAP
+echo "Ensure hostname is set properly"
+sleep 5
+if [ "$(hostname)" != $newhostname ];then
+echo "Hostname not set properly"
+exit
+fi
 
 echo "Starting SAP app server"
 su - $sidadm -c "/usr/sap/${SID}/D00/exe/sapcontrol -nr 00 -function StartService ${SID}"
