@@ -15,20 +15,20 @@ catch() {
 SID="$1"
 sid=$(echo $SID | tr '[:upper:]' '[:lower:]')
 sidadm=${sid}adm
-
-orighostname="$2"
+instancenr="$2"
+orighostname="$3"
 ORIGHOSTNAME=$(echo $orighostname | tr '[:lower:]' '[:upper:]')
-newhostname="$3"
+newhostname="$4"
 NEWHOSTNAME=$(echo $newhostname | tr '[:lower:]' '[:upper:]')
 
-if [[ -z "$SID" || -z "$orighostname" || -z "$newhostname" ]]; then
-echo "Run the script with SID, original hostname and new hostname parameters eg. app_install.sh SBX tst-app-avm-1 tst-app-avm-2"
-exit
+if [[ -z "$SID" || -z "$orighostname" || -z "$newhostname"  || -z "$instancenr" ]]; then
+echo "Run the script with SID, instance numberm, original hostname and new hostname parameters eg. app_install.sh SBX 00 tst-app-avm-1 tst-app-avm-2"
+exit 1
 fi
 
 if [ "$(whoami)" != "root" ];then
 echo "Run the script as root user"
-exit
+exit 1
 fi
 
 ##Main program##
@@ -56,22 +56,22 @@ cp -pr /usr/sap/sapservices /usr/sap/sapservices.old
 sed -i 's/'$orighostname'/'$newhostname'/g' /usr/sap/sapservices
 
 ##Creating new profile
-cp -pr /sapmnt/$SID/profile/${SID}_D00_${orighostname} /sapmnt/${SID}/profile/${SID}_D00_${newhostname}
-sed -i 's/'$orighostname'/'$newhostname'/g' /sapmnt/${SID}/profile/${SID}_D00_${newhostname}
-sed -i 's/'$ORIGHOSTNAME'/'$NEWHOSTNAME'/g' /sapmnt/${SID}/profile/${SID}_D00_${newhostname}
+cp -pr /sapmnt/$SID/profile/${SID}_D${instancenr}_${orighostname} /sapmnt/${SID}/profile/${SID}_D${instancenr}_${newhostname}
+sed -i 's/'$orighostname'/'$newhostname'/g' /sapmnt/${SID}/profile/${SID}_D${instancenr}_${newhostname}
+sed -i 's/'$ORIGHOSTNAME'/'$NEWHOSTNAME'/g' /sapmnt/${SID}/profile/${SID}_D${instancenr}_${newhostname}
 
 ##Starting SAP
 echo "Ensure hostname is set properly"
 sleep 5
 if [ "$(hostname)" != $newhostname ];then
 echo "Hostname not set properly"
-exit
+exit 1
 fi
 
 echo "Starting SAP app server"
-su - $sidadm -c "/usr/sap/${SID}/D00/exe/sapcontrol -nr 00 -function StartService ${SID}"
+su - $sidadm -c "/usr/sap/${SID}/D${instancenr}/exe/sapcontrol -nr $instancenr -function StartService ${SID}"
 sleep 5
-su - $sidadm -c "/usr/sap/${SID}/D00/exe/sapcontrol -nr 00 -function Start"
+su - $sidadm -c "/usr/sap/${SID}/D${instancenr}/exe/sapcontrol -nr $instancenr -function Start"
 flag=0
 retry=0
 until [ "$retry" -ge 10 ]
