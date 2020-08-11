@@ -1,5 +1,7 @@
     param(
         [Parameter(Mandatory = $true)]
+        [string]$ScalingAutomationAccountName,
+        [Parameter(Mandatory = $true)]
         [string]$SAPSystemID,
         [string] $AzureEnvironment = 'AzureCloud',
         [int] $decrementsize = '1',
@@ -34,7 +36,6 @@
     Write-Output "Scaling will be performed with below data"
     Write-Output $configTabledata
 
-    $appserverlist = @()
     [string[]]$logongroup = $scalingconfig.SAPLogonGroups.Split(",")
     [string[]]$servergroup = $scalingconfig.SAPServerGroups.Split(",")
 
@@ -47,9 +48,10 @@
 
     Write-Output "Decreasing app server count from $scalingconfig.CurrentAppCount to $TargetAppServerCount"
 
-    for ($i = $scalingconfig.CurrentAppCount; $i -ge $TargetAppServerCount; $i--) {
+    for ($i = $scalingconfig.CurrentAppCount; $i -gt $TargetAppServerCount; $i--) {
         $appservername = $scalingconfig.SAPAppNamingPrefix  + $i
         Write-Output "Deregistering app servers from SMLG"
+        $appserverlist = @()
         foreach ($item in $logongroup) {
             Write-Output $item
             $appserverlist += [PSCustomObject]@{
@@ -72,44 +74,31 @@
 
         $lpinput = $appserverlist | ConvertTo-Json
         $requesturi = 'https://prod-13.canadacentral.logic.azure.com:443/workflows/ab3a72323fb4439782629837019ba869/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=cC_qcR0SvYNcFiGn94j-9_RaUX7WmheoFD-BtTNFjRE'
-        Invoke-WebRequest $requesturi -Body $lpinput -Method 'POST' -ContentType 'text/plain' -UseBasicParsing
-        Write-Output "App servers deleted from logon groups in SAP"
+        $response = Invoke-WebRequest $requesturi -Body $lpinput -Method 'POST' -ContentType 'text/plain' -UseBasicParsing
 
-        #Stopping App server
-        Write-Output "Stopping Appserver $appservername"
-        $Instancenr = $scalingconfig.SAPInstancenr
-        $Timeout = $scalingconfig.SAPShutdownTimeout
-        $scripturi = "https://$ConfigStorageAccount.blob.core.windows.net/script/appserver_decom.sh"
-        $Settings = @{"fileUris" = @($scripturi); "commandToExecute" = "./appserver_decom.sh $SAPSystemID $Instancenr $Timeout"};
-        $ProtectedSettings = @{"storageAccountName" = $ConfigStorageAccount; "storageAccountKey" = $storageaccountkey.value };
+        if ($response.StatusCode -ne 200) {
+            Write-Output "Logic app to register logon group failed. Please check logs "
+            Exit 1
+        }
+              
+        Write-Output "App servers removed from logon groups in SAP"
+        
+        $TimeZone = ([System.TimeZoneInfo]::Local).Id
+        $ScheduleTime = (Get-Date).AddMinutes($scalingconfig.SAPDeleteTimeout)
+        New-AzAutomationSchedule -AutomationAccountName $ScalingAutomationAccountName `
+                                 -Name "Schedule1-$appservername" `
+                                 -StartTime $ScheduleTime `
+                                 -ResourceGroupName $ConfigResourceGroup `
+                                 -TimeZone $TimeZone `
+                                 -OneTime
 
-        Set-AzVMExtension `
-            -ResourceGroupName $scalingconfig.SAPResourceGroup `
-            -Location $scalingconfig.SAPRegion `
-            -VMName $appservername `
-            -Name "CustomScript" `
-            -Publisher "Microsoft.Azure.Extensions" `
-            -ExtensionType "CustomScript" `
-            -TypeHandlerVersion "2.0" `
-            -Settings $Settings 
-            -ProtectedSettings $ProtectedSettings
+        Register-AzAutomationScheduledRunbook -RunbookName "SAPScaleDown-Delete" `
+                                              -ScheduleName "Schedule1-$appservername"  `
+                                              -ResourceGroupName $ConfigResourceGroup `
+                                              -AutomationAccountName $ScalingAutomationAccountName `
+                                              -Parameters @{"ScalingAutomationAccountName" = $ScalingAutomationAccountName ; "SAPSystemId" = $SAPSystemId ; "appservername" = $appservername ; "ConfigStorageAccount" = $ConfigStorageAccount ; "ConfigResourceGroup" = $ConfigResourceGroup ; "ConfigTableName" = $ConfigTableName}
 
-        Write-Output "SAP app server $appservername stoppped successfully"
-
-        ##Deleteing App Server
-
-        Remove-AzVM -ResourceGroupName $scalingconfig.SAPResourceGroup -Name $appservername -Force
-        Remove-AzNetworkInterface -Name "$appservername-nic" -ResourceGroupName $scalingconfig.SAPResourceGroup -Force
-        Remove-AzDisk -ResourceGroupName $scalingconfig.SAPResourceGroup -DiskName "$appservername*" -Force
-
-    Write-Output "App server $appservername and associated resource deleted from resource group"
-    
-    ##Update the azure table with new app server count
-        $scalingconfig.CurrentAppCount = $TargetAppServerCount
-        $scalingconfig | Update-AztableRow -table $configtable.CloudTable
-    
-    Write-Output "Config table updated the new app server count $(scalingconfig.CurrentAppCount)"
-
+        Write-Output "App server deletion runbook scheduled to run at $ScheduleTime"
     }
 }
 

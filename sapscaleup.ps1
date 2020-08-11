@@ -141,14 +141,32 @@ Write-Output "SAP app servers scaled from ($scalingconfig.CurrentAppCount) to $T
 $scalingconfig.CurrentAppCount = $TargetAppServerCount
 $scalingconfig | Update-AztableRow -table $configtable.cloudTable
 
+#Adding VM to loadbalancer
+if($null -ne $scalingconfig.SAPAppLoadBalancer)
+{
+    $lb = Get-AzLoadBalancer –name $scalingconfig.SAPAppLoadBalancer -resourcegroupname $scalingconfig.SAPResourceGroup
+    $backend = Get-AzLoadBalancerBackendAddressPoolConfig -LoadBalancer $lb
+    $nic = Get-AzNetworkInterface –name "$appservername-nic" -resourcegroupname $scalingconfig.SAPResourceGroup
+    $nic.IpConfigurations[0].LoadBalancerBackendAddressPools=$backend
+    Set-AzNetworkInterface -NetworkInterface $nic
+    Write-Output "VM $appservername added to load balancer successfully"
+}
+else {
+    Write-Output "App server not part of any LB pool. Nothing to do"
+}
 
+##Adding VM to logon groups
 $lpinput = $appserverlist | ConvertTo-Json
 
 $requesturi = 'https://prod-13.canadacentral.logic.azure.com:443/workflows/ab3a72323fb4439782629837019ba869/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=cC_qcR0SvYNcFiGn94j-9_RaUX7WmheoFD-BtTNFjRE'
 
 $response = Invoke-WebRequest $requesturi -Body $lpinput -Method 'POST' -ContentType 'text/plain' -UseBasicParsing
 
-Write-Output "Logic app output $response"
+if ($response.StatusCode -ne 200) {
+    Write-Output "Logic app to register logon group failed. Please check logs "
+    Exit 1
+}
+
 Write-Output "App servers added to logon groups in SAP"
 
 ##Start-AzLogicApp `
