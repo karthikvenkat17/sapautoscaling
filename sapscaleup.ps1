@@ -60,6 +60,15 @@ for ($i = $scalingconfig.CurrentAppCount+1; $i -le $TargetAppServerCount; $i++) 
         -SubnetId $subnet.id `
     
     Write-Output "Network Interface $nic.Name created"
+
+    ##Assign Public IP address to the NIC
+
+    $pip = New-AzPublicIpAddress -Name "$appservername-pip" `
+                                 -ResourceGroupName $scalingconfig.SAPResourceGroup `
+                                 -Sku "Standard" -AllocationMethod "Static" `
+                                 -Location $scalingconfig.SAPRegion
+    $nic | Set-AzNetworkInterfaceIpConfig -Name "ipconfig1" -PublicIPAddress $pip
+    $nic | Set-AzNetworkInterface
   
     # Define a credential object
     $securePassword = ConvertTo-SecureString ' ' -AsPlainText -Force

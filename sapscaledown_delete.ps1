@@ -63,6 +63,8 @@
 
     Remove-AzVM -ResourceGroupName $scalingconfig.SAPResourceGroup -Name $appservername -Force
     Remove-AzNetworkInterface -Name "$appservername-nic" -ResourceGroupName $scalingconfig.SAPResourceGroup -Force
+    Remove-AzPublicIpAddress -Name "$appservername-pip" -ResourceGroupName $scalingconfig.SAPResourceGroup -Force
+
 
     ##Removing disks
 
