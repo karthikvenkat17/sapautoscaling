@@ -1,0 +1,200 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "workflows_kvscalinglp_name": {
+            "defaultValue": "kvscalinglp",
+            "type": "String"
+        },
+        "connections_azureloganalyticsdatacollector_externalid": {
+            "defaultValue": "/subscriptions/afbba066-2190-4c21-b9ec-4a945b7bfbcc/resourceGroups/kvsapautoscaling/providers/Microsoft.Web/connections/azureloganalyticsdatacollector",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('workflows_kvscalinglp_name')]",
+            "location": "northeurope",
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "Recurrence": {
+                            "recurrence": {
+                                "frequency": "Minute",
+                                "interval": 5
+                            },
+                            "type": "Recurrence"
+                        }
+                    },
+                    "actions": {
+                        "For_each": {
+                            "foreach": "@body('Parse_JSON')?['d']?['results']",
+                            "actions": {
+                                "Compose": {
+                                    "runAfter": {},
+                                    "type": "Compose",
+                                    "inputs": {
+                                        "Active Dia WPs": "@items('For_each')?['ActDia']",
+                                        "Active WPs": "@items('For_each')?['ActWps']",
+                                        "Date": "@items('For_each')?['Datum']",
+                                        "DialogQueueLength": "@items('For_each')?['Diaq']",
+                                        "No. of free RFC WPs": "@items('For_each')?['TrfcFree']",
+                                        "Servername": "@items('For_each')?['Server']",
+                                        "Time": "@items('For_each')?['Time']",
+                                        "Users": "@items('For_each')?['Users']"
+                                    }
+                                },
+                                "Send_Data_2": {
+                                    "runAfter": {
+                                        "Compose": [
+                                            "Succeeded"
+                                        ]
+                                    },
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "body": "@{outputs('Compose')}",
+                                        "headers": {
+                                            "Log-Type": "SAPPerfmonTST"
+                                        },
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['azureloganalyticsdatacollector']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/api/logs"
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Foreach"
+                        },
+                        "HTTP": {
+                            "runAfter": {},
+                            "type": "Http",
+                            "inputs": {
+                                "authentication": {
+                                    "password": "Welcome@123456",
+                                    "type": "Basic",
+                                    "username": "demouser"
+                                },
+                                "method": "GET",
+                                "queries": {
+                                    "$filter": "Datum eq datetime'@{formatDateTime(utcNow(),'yyyy-MM-ddTHH:mm:ss')}' and Time ge time'@{formatDateTime(getPastTime(5,'Minute'),'PTHH\"H\"mm\"M\"ssS')}' and Server eq 'tst-app-avm-0_TST_00'",
+                                    "$format": "json"
+                                },
+                                "uri": "http://40.82.160.253:8000/sap/opu/odata/sap/ZSCALINGDEMO_SRV/ZSDFMONSet"
+                            }
+                        },
+                        "Parse_JSON": {
+                            "runAfter": {
+                                "HTTP": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ParseJson",
+                            "inputs": {
+                                "content": "@body('HTTP')",
+                                "schema": {
+                                    "properties": {
+                                        "d": {
+                                            "properties": {
+                                                "results": {
+                                                    "items": {
+                                                        "properties": {
+                                                            "ActDia": {
+                                                                "type": "integer"
+                                                            },
+                                                            "ActWps": {
+                                                                "type": "integer"
+                                                            },
+                                                            "Datum": {
+                                                                "type": "string"
+                                                            },
+                                                            "Diaq": {
+                                                                "type": "integer"
+                                                            },
+                                                            "Server": {
+                                                                "type": "string"
+                                                            },
+                                                            "Time": {
+                                                                "type": "string"
+                                                            },
+                                                            "TrfcFree": {
+                                                                "type": "integer"
+                                                            },
+                                                            "Users": {
+                                                                "type": "integer"
+                                                            },
+                                                            "__metadata": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "type": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "uri": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "__metadata",
+                                                            "Datum",
+                                                            "Time",
+                                                            "Server",
+                                                            "ActWps",
+                                                            "ActDia",
+                                                            "TrfcFree",
+                                                            "Diaq",
+                                                            "Users"
+                                                        ],
+                                                        "type": "object"
+                                                    },
+                                                    "type": "array"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "azureloganalyticsdatacollector": {
+                                "connectionId": "[parameters('connections_azureloganalyticsdatacollector_externalid')]",
+                                "connectionName": "azureloganalyticsdatacollector",
+                                "id": "/subscriptions/afbba066-2190-4c21-b9ec-4a945b7bfbcc/providers/Microsoft.Web/locations/northeurope/managedApis/azureloganalyticsdatacollector"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
