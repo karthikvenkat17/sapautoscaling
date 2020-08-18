@@ -1,0 +1,290 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "SAPRegisterLogicAppName" : {
+            "type" : "string"
+        },
+       "LogicAppLocation" : {
+            "type" : "string"
+        },
+        "SAPConnectionName" : {
+             "type": "string"
+        },
+        "OnpremDataGateway": {
+            "type": "string"
+        },
+        "SAPClient": {
+            "type": "string"
+        },
+        "SAPAuthType": {
+            "type": "string"
+        },
+        "SAPUserName": {
+            "type": "string"
+        },
+        "SAPPassword": {
+            "type": "SecureString"
+        },
+        "SAPLogonType": {
+            "type": "string"
+        },
+        "SAPAppServerHost": {
+            "type": "string"
+        },
+        "SAPAppServerPort": {
+            "type": "string"
+        },
+        "SAPSystemNumber": {
+            "type": "string"
+        },
+        "SAPMessageServerHost": {
+            "type": "string"
+        },
+        "SAPMessageServerPort": {
+            "type": "string"
+        },
+        "SAPSystemId": {
+            "type": "string"
+        },
+        "SAPLogonGroup": {
+            "type": "string"
+        },
+        "office365ConnectionName": {
+            "type" : "string"
+        },
+        "AlertEMailrecepient" : {
+            "type": "string"
+        }
+        
+    },
+    "functions": [],
+    "variables": {},
+    "resources": [
+        {
+            "name": "[parameters('SAPConnectionName')]",
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+            },
+            "properties": {
+                "displayName": "[parameters('SAPConnectionName')]",
+                "parameterValues": {
+                    "gateway" : "[parameters('OnpremDataGateway')]",
+                    "client" : "[parameters('SAPClient')]",
+                    "authType" : "[parameters('SAPAuthType')]",
+                    "username" : "[parameters('SAPUserName')]",
+                    "password" : "[parameters('SAPPassword')]",
+                    "logonType" : "[parameters('SAPLogonType')]",
+                    "appServerHost": "[parameters('SAPAppServerHost')]",
+                    "appServerService" : "[parameters('SAPAppServerPort')]",
+                    "systemNumber" : "[parameters('SAPSystemNumber')]",
+                    "messageServerHost" : "[parameters('SAPMessageServerHost')]",
+                    "messageServerService" : "[parameters('SAPMessageServerPort')]",
+                    "systemID" : "[parameters('SAPSystemId')]",
+                    "logongroup" : "[parameters('SAPLogonGroup')]"
+                    
+                },
+               "api": {
+                    "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/sap')]"
+                }
+            }
+        },
+        {
+            "name": "[parameters('office365ConnectionName')]",
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "location": "[resourceGroup().location]",
+            "tags": {
+            },
+            "properties": {
+                "displayName": "[parameters('office365ConnectionName')]",
+                "parameterValues": {
+                },
+                "api": {
+                    "id": "[concat(subscription().id, '/providers/Microsoft.Web/locations/', resourceGroup().location, '/managedApis/office365')]"
+                }
+            }
+        },
+        {
+            "name": "[parameters('SAPRegisterLogicAppName')]",
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/connections',parameters('SAPConnectionName'))]",
+                "[resourceId('Microsoft.Web/connections',parameters('office365ConnectionName'))]"
+            ],
+            "properties": {
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                    },
+                    "triggers": {
+                        "manual": {
+                            "type": "Request",
+                            "kind": "Http",
+                            "inputs": {
+                                "schema": {
+                                    "items": {
+                                        "properties": {
+                                            "Action": {
+                                                "type": "string"
+                                            },
+                                            "Applserver": {
+                                                "type": "string"
+                                            },
+                                            "Group": {
+                                                "type": "string"
+                                            },
+                                            "GroupType": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "Applserver",
+                                            "Group",
+                                            "GroupType",
+                                            "Action"
+                                        ],
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        }
+                    },
+                    "actions": {
+                          "Parse_JSON": {
+                            "runAfter": {},
+                            "type": "ParseJson",
+                            "inputs": {
+                                "content": "@triggerBody()",
+                                "schema": {
+                                    "items": {
+                                        "properties": {
+                                            "Action": {
+                                                "type": "string"
+                                            },
+                                            "Applserver": {
+                                                "type": "string"
+                                            },
+                                            "Group": {
+                                                "type": "string"
+                                            },
+                                            "GroupType": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "Applserver",
+                                            "Group",
+                                            "GroupType",
+                                            "Action"
+                                        ],
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+
+                      "For_each": {
+                            "foreach": "@body('Parse_JSON')",
+                            "actions": {
+                                "Send_message_to_SAP": {
+                                    "runAfter": {},
+                                    "type": "ApiConnection",
+                                    "inputs": {
+                                        "body": "<SMLG_MODIFY xmlns=\"http://Microsoft.LobServices.Sap/2007/03/Types/Rfc/\"> \n<GROUPTYPE>@{items('For_each')['GroupType']}</GROUPTYPE>\n<MODIFICATIONS xmlns=\"http://Microsoft.LobServices.Sap/2007/03/Types/Rfc/Rfc/\"> \n<RZLLIMODIF> \n    <CLASSNAME>@{items('For_each')['Group']}</CLASSNAME> \n    <APPLSERVER>@{items('For_each')['Applserver']}</APPLSERVER>\n      <MODIFICATN>@{items('For_each')['Action']}</MODIFICATN> \n</RZLLIMODIF>\n</MODIFICATIONS> \n</SMLG_MODIFY>",
+                                        "host": {
+                                            "connection": {
+                                                "name": "@parameters('$connections')['sap-1']['connectionId']"
+                                            }
+                                        },
+                                        "method": "post",
+                                        "path": "/Send",
+                                        "queries": {
+                                            "sapAction": "http://Microsoft.LobServices.Sap/2007/03/Rfc/SMLG_MODIFY"
+                                        }
+                                    }
+                                }
+                            },
+                            "runAfter": {
+                                "Parse_JSON": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Foreach",
+                            "runtimeConfiguration": {
+                                "concurrency": {
+                                    "repetitions": 1
+                                }
+                            }
+                        },
+                    "Send_an_email_(V2)": {
+                            "runAfter": {
+                                "For_each": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": {
+                                    "Body": "<p>Following app servers are created and added to logon groups<br>\n<br>\n@{triggerBody()}</p>",
+                                    "Subject": "SAP Appserver scaling",
+                                    "To": "[parameters('AlertEMailrecepient')]"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['office365']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/v2/Mail"
+                            }
+                        }
+                    },
+
+                    "Response": {
+                            "runAfter": {
+                                "Send_an_email_(V2)": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Response",
+                            "kind": "Http",
+                            "inputs": {
+                                "statusCode": 200
+                            }
+                    },
+                    "outputs": {
+                    }
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "office365": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections',parameters('office365ConnectionName'))]",
+                                "connectionName": "[parameters('office365ConnectionName')]",
+                                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/',parameters('LogicAppLocation'),'/managedApis/office365')]"
+                               
+                            },
+                        "sap-1": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections',parameters('SAPConnectionName'))]",
+                                "connectionName": "[parameters('SAPConnectionName')]",
+                                "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/',parameters('LogicAppLocation'),'/managedApis/sap')]"
+                               
+                            }
+                        }
+                    
+                }
+                }
+            }
+        }
+
+    ],
+    "outputs": {}
+}

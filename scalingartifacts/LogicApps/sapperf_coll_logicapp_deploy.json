@@ -12,6 +12,7 @@
         }
     },
     "variables": {},
+    
     "resources": [
         {
             "type": "Microsoft.Logic/workflows",

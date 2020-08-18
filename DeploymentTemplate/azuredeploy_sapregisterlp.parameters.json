@@ -1,0 +1,60 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "OnpremDataGateway": {
+            "value": "" 
+        },
+        "SAPClient": {
+            "value": 0
+        },
+        "SAPAuthType": {
+            "value": "" 
+        },
+        "SAPUserName": {
+            "value": "" 
+        },
+        "SAPPassword": {
+            "value": "" 
+        },
+        "SAPLogonType": {
+            "value": "" 
+        },
+        "SAPAppServerHost": {
+            "value": "" 
+        },
+        "SAPAppServerPort": {
+            "value": "" 
+        },
+        "SAPSystemNumber": {
+            "value": 0 
+        },
+        "SAPMessageServerHost": {
+            "value": "" 
+        },
+        "SAPMessageServerPort": {
+            "value": "" 
+        },
+        "SAPSystemId": {
+            "value": "" 
+        },
+        "SAPLogonGroup": {
+            "value": "" 
+        },
+        "SAPConnectionName": {
+            "value": "" 
+        },
+        "SAPRegisterLogicAppName": {
+            "value": "" 
+        },
+        "LogicAppLocation": {
+            "value": "" 
+        },
+        "office365ConnectionName": {
+            "value": ""
+        },
+        "AlertEMailrecepient": {
+            "value": "" 
+        }
+    }
+}
