@@ -2,7 +2,7 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "SAPRegisterLogicAppName" : {
+                "LogicAppName" : {
             "type" : "string"
         },
        "LogicAppLocation" : {
@@ -11,14 +11,12 @@
         "SAPConnectionName" : {
              "type": "string"
         },
-        "OnpremDataGateway": {
-            "type": "string"
-        },
         "SAPClient": {
             "type": "string"
         },
         "SAPAuthType": {
-            "type": "string"
+            "type": "string",
+            "defaultValue" : "Basic"
         },
         "SAPUserName": {
             "type": "string"
@@ -27,16 +25,8 @@
             "type": "SecureString"
         },
         "SAPLogonType": {
-            "type": "string"
-        },
-        "SAPAppServerHost": {
-            "type": "string"
-        },
-        "SAPAppServerPort": {
-            "type": "string"
-        },
-        "SAPSystemNumber": {
-            "type": "string"
+            "type": "string",
+            "defaultValue" : "B"
         },
         "SAPMessageServerHost": {
             "type": "string"
@@ -55,8 +45,16 @@
         },
         "AlertEMailrecepient" : {
             "type": "string"
+        },
+        "OnPremGatewayName" : {
+            "type" : "string"
+        },
+        "OnPremGatewayResourceGroup" :{
+            "type" : "string"
+        },
+        "OnPremGatewayLocation" : {
+            "type" : "string"
         }
-        
     },
     "functions": [],
     "variables": {},
@@ -71,15 +69,18 @@
             "properties": {
                 "displayName": "[parameters('SAPConnectionName')]",
                 "parameterValues": {
-                    "gateway" : "[parameters('OnpremDataGateway')]",
+                    "gateway" : 
+                            {
+                             "id": "[concat(subscription().id,'/resourceGroups/',parameters('OnPremGatewayResourceGroup'),'/providers/Microsoft.Web/connectionGateways/',parameters('OnPremGatewayName'))]",
+                             "name": "[parameters('OnPremGatewayName')]",
+                            "type": "Microsoft.Web/connectionGateways",
+                            "location": "[parameters('OnPremGatewayLocation')]"     
+                            },
                     "client" : "[parameters('SAPClient')]",
                     "authType" : "[parameters('SAPAuthType')]",
                     "username" : "[parameters('SAPUserName')]",
                     "password" : "[parameters('SAPPassword')]",
                     "logonType" : "[parameters('SAPLogonType')]",
-                    "appServerHost": "[parameters('SAPAppServerHost')]",
-                    "appServerService" : "[parameters('SAPAppServerPort')]",
-                    "systemNumber" : "[parameters('SAPSystemNumber')]",
                     "messageServerHost" : "[parameters('SAPMessageServerHost')]",
                     "messageServerService" : "[parameters('SAPMessageServerPort')]",
                     "systemID" : "[parameters('SAPSystemId')]",
@@ -107,8 +108,9 @@
                 }
             }
         },
+
         {
-            "name": "[parameters('SAPRegisterLogicAppName')]",
+            "name": "[parameters('LogicAppName')]",
             "type": "Microsoft.Logic/workflows",
             "apiVersion": "2017-07-01",
             "location": "[resourceGroup().location]",
@@ -117,10 +119,15 @@
                 "[resourceId('Microsoft.Web/connections',parameters('office365ConnectionName'))]"
             ],
             "properties": {
+                "state" : "Disabled",
                 "definition": {
                     "$schema": "https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json",
                     "contentVersion": "1.0.0.0",
                     "parameters": {
+                        "$connections" :{
+                                   "defaultValue": {},
+                                    "type": "Object"
+                        }
                     },
                     "triggers": {
                         "manual": {
@@ -157,41 +164,7 @@
                         }
                     },
                     "actions": {
-                          "Parse_JSON": {
-                            "runAfter": {},
-                            "type": "ParseJson",
-                            "inputs": {
-                                "content": "@triggerBody()",
-                                "schema": {
-                                    "items": {
-                                        "properties": {
-                                            "Action": {
-                                                "type": "string"
-                                            },
-                                            "Applserver": {
-                                                "type": "string"
-                                            },
-                                            "Group": {
-                                                "type": "string"
-                                            },
-                                            "GroupType": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "required": [
-                                            "Applserver",
-                                            "Group",
-                                            "GroupType",
-                                            "Action"
-                                        ],
-                                        "type": "object"
-                                    },
-                                    "type": "array"
-                                }
-                            }
-                        },
-
-                      "For_each": {
+                           "For_each": {
                             "foreach": "@body('Parse_JSON')",
                             "actions": {
                                 "Send_message_to_SAP": {
@@ -224,7 +197,52 @@
                                 }
                             }
                         },
-                    "Send_an_email_(V2)": {
+                        "Parse_JSON": {
+                            "runAfter": {},
+                            "type": "ParseJson",
+                            "inputs": {
+                                "content": "@triggerBody()",
+                                "schema": {
+                                    "items": {
+                                        "properties": {
+                                            "Action": {
+                                                "type": "string"
+                                            },
+                                            "Applserver": {
+                                                "type": "string"
+                                            },
+                                            "Group": {
+                                                "type": "string"
+                                            },
+                                            "GroupType": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "Applserver",
+                                            "Group",
+                                            "GroupType",
+                                            "Action"
+                                        ],
+                                        "type": "object"
+                                    },
+                                    "type": "array"
+                                }
+                            }
+                        },
+                        "Response": {
+                            "runAfter": {
+                                "Send_an_email_(V2)": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Response",
+                            "kind": "Http",
+                            "inputs": {
+                                "statusCode": 200
+                            }
+                        },
+                        "Send_an_email_(V2)": {
                             "runAfter": {
                                 "For_each": [
                                     "Succeeded"
@@ -246,27 +264,16 @@
                                 "path": "/v2/Mail"
                             }
                         }
-                    },
 
-                    "Response": {
-                            "runAfter": {
-                                "Send_an_email_(V2)": [
-                                    "Succeeded"
-                                ]
-                            },
-                            "type": "Response",
-                            "kind": "Http",
-                            "inputs": {
-                                "statusCode": 200
-                            }
+                        
                     },
                     "outputs": {
                     }
                 },
                 "parameters": {
                     "$connections": {
-                        "value": {
-                            "office365": {
+                        "value" : {
+                        "office365": {
                                 "connectionId": "[resourceId('Microsoft.Web/connections',parameters('office365ConnectionName'))]",
                                 "connectionName": "[parameters('office365ConnectionName')]",
                                 "id": "[concat(subscription().id,'/providers/Microsoft.Web/locations/',parameters('LogicAppLocation'),'/managedApis/office365')]"
@@ -279,12 +286,12 @@
                                
                             }
                         }
-                    
-                }
+
+                    }
                 }
             }
         }
-
+        
     ],
     "outputs": {}
 }

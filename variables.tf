@@ -25,10 +25,18 @@ variable "loganalyticsworkspace" {
 variable "alertrecepient" { 
     description = "Email recepient for alerts generated and Logic app notification"
 }
-variable "datagateway" { 
-    description = "On-prem datagateway to be used for SAP Connectivity"
+variable "odgname" { 
+    description = "On-prem datagateway name to be used for SAP Connectivity"
+}
+
+variable "odgresouregroup" {
+    description = "On-Prem datagateway resource group"
+}
+variable "odglocation" {
+    description = "On-prem data gateway location"
 }
 variable "datacollectioninterval" {
+        type = number
     description = "SAP performance Data collection interval in minutes"
 }
 variable "sapodatauri" {
@@ -43,11 +51,11 @@ variable "sapodatauser" {
 variable "sapregisteruser" {
     description = "SAP Username to be used for logon group registration"
 }
-variable "keyvault_name" {
+variable "sapodatapasswd" {
     description = "Keyvault to retreive passwords of SAP users"
 }
 
-variable "keyvault_rg" {
+variable "sapregisterpasswd" {
     description = "Resource group of Keyvault to retreive passwords of SAP users"
 }
 

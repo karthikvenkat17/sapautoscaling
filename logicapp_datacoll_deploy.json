@@ -11,7 +11,7 @@
             "type": "string"
         },
         "RecurrenceInterval": {
-            "type": "int"
+            "type": "string"
         },
         "SAPSystemID": {
             "type": "string"
@@ -37,7 +37,9 @@
         
     },
     "functions": [],
-    "variables": {},
+    "variables": {
+        "odatafilter" : "Datum eq datetime'@{formatDateTime(utcNow(),'yyyy-MM-ddTHH:mm:ss')}' and Time ge time'@{formatDateTime(getPastTime(Recurrence,'Minute'),'PTHH\"H\"mm\"M\"ssS')}"
+    },
     "resources": [
          {
             "type": "Microsoft.Web/connections",
@@ -68,6 +70,10 @@
                         "$schema": "https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json",
                         "contentVersion": "1.0.0.0",
                         "parameters": {
+                              "$connections": {
+                                    "defaultValue": {},
+                                    "type": "Object"
+                                }
                         },
                 "triggers": {
                             "Recurrence": {
@@ -90,7 +96,7 @@
                                 },
                             "method": "GET",
                                 "queries": {
-                                "$filter": "Datum eq datetime'@{formatDateTime(utcNow(),'yyyy-MM-ddTHH:mm:ss')}' and Time ge time'@{formatDateTime(getPastTime(parameters('RecurrenceInterval'),'Minute'),'PTHH\"H\"mm\"M\"ssS')}'",
+                                "$filter": "[replace(variables('odatafilter'),'Recurrence',parameters('RecurrenceInterval'))]",
                                 "$format": "json"
                                 },
                             "uri": "[parameters('SAPOdataUri')]"

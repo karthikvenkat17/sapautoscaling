@@ -148,9 +148,45 @@ resource "azurerm_storage_table_entity" "config" {
            }
 }
 
-resource "azurerm_logic_app_workflow" "logicapp1" {
-    name = var.logicapp-datacoll
-    location = var.location
+resource "azurerm_template_deployment" "logicapp-datacoll" {
+    name = "LogicAppDataCollDeployment"
     resource_group_name = azurerm_resource_group.scaling-rg.name
-    workflow_schema = 
+    template_body = file("logicapp_datacoll_deploy.json")
+    parameters = {
+        "LogicAppLocation" = var.location
+        "LogicAppName" = var.logicapp-datacoll
+        "RecurrenceInterval" = var.datacollectioninterval
+        "LogAnalyticsWorkspaceId" = azurerm_log_analytics_workspace.sap-log.workspace_id
+        "LogAnalyticsWorkspaceKey" = azurerm_log_analytics_workspace.sap-log.primary_shared_key
+        "LogAnalyticsConnectionName" = "SapLogAnalyticsApiConn"
+        "SAPUser" = var.sapodatauser
+        "SAPPassword" = var.sapodatapasswd
+        "SAPOdataUri" = var.sapodatauri
+        "SAPSystemID" = var.sapsid   
+    }
+    deployment_mode = "Incremental"
+}
+
+resource "azurerm_template_deployment" "logicapp-sapregister" {
+    name = "LogicAppSapRegisterDeployment"
+    resource_group_name = azurerm_resource_group.scaling-rg.name
+    template_body = file("logicapp_sapregister_deploy.json")
+    parameters = {
+        "LogicAppLocation" = var.location
+        "LogicAppName" = var.logicapp-sapregister
+        "SAPConnectionName" = "SapApionnection"
+        "OnPremGatewayName" = var.odgname
+        "OnPremGatewayResourceGroup" = var.odgresourcegroup
+        "OnPremGatewayLocation" = var.odglocation
+        "SAPClient" = var.sapclient
+        "SAPUserName" = var.sapregisteruser
+        "SAPPassword" = var.sapregisterpasswd
+        "SAPMessageServerHost" = var.sapmshost
+        "SAPMessageServerPort" = var.sapmsport
+        "SAPSystemId" = var.sapsid
+        "SAPLogonGroup" = var.saplogongroup
+        "office365ConnectionName" = "office365-1"
+        "AlertEmailRecepient" = "alertrecepient"
+    }
+    deployment_mode = "Incremental"
 }
