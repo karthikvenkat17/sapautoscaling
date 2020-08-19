@@ -43,8 +43,12 @@ variable "sapodatauser" {
 variable "sapregisteruser" {
     description = "SAP Username to be used for logon group registration"
 }
-variable "keyvault" {
+variable "keyvault_name" {
     description = "Keyvault to retreive passwords of SAP users"
+}
+
+variable "keyvault_rg" {
+    description = "Resource group of Keyvault to retreive passwords of SAP users"
 }
 
 variable "sapclient" {
@@ -61,4 +65,26 @@ variable "sapmsport" {
 
 variable "saplogongroup" {
     description = "SAP Logon group to be used for creating connection from Logic app via ODG"
+}
+
+variable "scalingconfig" {
+  type = map(object({
+        CurrentAppCount = number
+        MaxAppCount = number
+        MinAppAcount = number
+        SAPAppLoadBalancer = string
+        SAPAppNamingPrefix = string
+        SAPAppVmSize = string
+        SAPCustomImageid = string
+        SAPDeleteTimeout = number
+        SAPImageHostName = string
+        SAPInstanceNr = number
+        SAPLogonGroups = string
+        SAPRegion = string
+        SAPResourceGroup = string 
+        SAPServerGroups = string
+        SAPShutdownTimeout = number
+        SAPSubnet = string
+        SAPVnet = string
+  }))
 }
