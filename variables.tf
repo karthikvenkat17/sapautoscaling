@@ -11,7 +11,7 @@ variable "automationaccount" {
     description = "Name of the Azure Automation account to be used for SAP autoscaling runbooks"
 }
 variable "logicapp-datacoll" {
-    description = "Name of the Logic app to be used for data collection"
+    description = "Name of the Logic app to be used for SAP data collection"
 }
 variable "logicapp-sapregister" {
     description = "Name of the Logic App to be used for SAP logon group registration"
