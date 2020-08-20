@@ -38,7 +38,7 @@
     },
     "functions": [],
     "variables": {
-        "odatafilter" : "Datum eq datetime'@{formatDateTime(utcNow(),'yyyy-MM-ddTHH:mm:ss')}' and Time ge time'@{formatDateTime(getPastTime(Recurrence,'Minute'),'PTHH\"H\"mm\"M\"ssS')}"
+        "odatafilter" : "Datum eq datetime'@{formatDateTime(utcNow(),'yyyy-MM-ddTHH:mm:ss')}' and Time ge time'@{formatDateTime(getPastTime(Recurrence,'Minute'),'PTHH\"H\"mm\"M\"ssS')}'"
     },
     "resources": [
          {
@@ -207,7 +207,7 @@
                                "inputs": {
                                 "body": "@{outputs('Compose')}",
                                 "headers": {
-                                "Log-Type": "[concat('SAPPerformon-',parameters('SAPSystemID'))]"
+                                "Log-Type": "[concat('SAPPerfmon',parameters('SAPSystemID'))]"
                                 },
                                 "host": {
                                 "connection": {

@@ -119,7 +119,7 @@
                 "[resourceId('Microsoft.Web/connections',parameters('office365ConnectionName'))]"
             ],
             "properties": {
-                "state" : "Disabled",
+                "state" : "Enabled",
                 "definition": {
                     "$schema": "https://schema.management.azure.com/schemas/2016-06-01/Microsoft.Logic.json",
                     "contentVersion": "1.0.0.0",
@@ -293,5 +293,10 @@
         }
         
     ],
-    "outputs": {}
+    "outputs": {
+        "logicappuri" : {
+            "type" : "string",
+            "value" : "[listCallbackUrl(concat(resourceId('Microsoft.Logic/workflows',parameters('LogicAppName')),'/triggers/manual'),'2016-06-01').value]"
+        }
+    }
 }

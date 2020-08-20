@@ -78,7 +78,7 @@ $params.parameters.networkInterfaceName.value = "$appservername-nic"
 $params.parameters.publicIpAddressName.value = "$appservername-publicIp"
 
 $params | ConvertTo-Json | set-content "$temppath\appserver_deploy.parameters.json"
-Set-AzStorageBlobContent -Container "paramfiles" -Blob "deploy_$appservername.parameters.json" -File "$temppath\appserver_deploy.parameters.json" -Context $storageaccountctx -Force
+Set-AzStorageBlobContent -Container "artifacts" -Blob "deploy_$appservername.parameters.json" -File "$temppath\appserver_deploy.parameters.json" -Context $storageaccountctx -Force
 
 $deployment = New-AzResourceGroupDeployment `
                 -DeploymentName $deploymentName `
@@ -146,7 +146,7 @@ $scalingconfig | Update-AztableRow -table $configtable.cloudTable
 ##Adding VM to logon groups
 $lpinput = $appserverlist | ConvertTo-Json
 
-$requesturi = 'https://prod-13.canadacentral.logic.azure.com:443/workflows/ab3a72323fb4439782629837019ba869/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=cC_qcR0SvYNcFiGn94j-9_RaUX7WmheoFD-BtTNFjRE'
+$requesturi = 'logicappuri'
 
 $response = Invoke-WebRequest $requesturi -Body $lpinput -Method 'POST' -ContentType 'text/plain' -UseBasicParsing
 

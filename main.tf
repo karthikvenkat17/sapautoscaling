@@ -25,6 +25,7 @@ resource "azurerm_automation_account" "scalingaccount" {
 
 
 resource "azurerm_automation_runbook" "scaleout" {
+    depends_on = [azurerm_template_deployment.logicapp-sapregister]
     name = "SAPScaleOut"
     location = var.location
     resource_group_name = azurerm_resource_group.scaling-rg.name
@@ -33,7 +34,7 @@ resource "azurerm_automation_runbook" "scaleout" {
     log_progress = "true"
     log_verbose = "true"
     description = "Runbook for Scaling out SAP app servers"
-    content = file("scalingartifacts/AutomationRunbooks/sapscaleup.ps1")
+    content = replace(file("scalingartifacts/AutomationRunbooks/sapscaleup.ps1"),"logicappuri",azurerm_template_deployment.logicapp-sapregister.outputs["logicappuri"])
  publish_content_link {
      uri = "http://microsoft.com"
  }
@@ -55,6 +56,7 @@ resource "azurerm_automation_runbook" "scaledown-delete" {
 }
 
 resource "azurerm_automation_runbook" "scaledown-deregister" {
+    depends_on = [azurerm_template_deployment.logicapp-sapregister]
     name = "SAPScaleDown-Degister"
     location = var.location
     resource_group_name = azurerm_resource_group.scaling-rg.name
@@ -63,7 +65,7 @@ resource "azurerm_automation_runbook" "scaledown-deregister" {
     log_progress = "true"
     log_verbose = "true"
     description = "Runbook for deregistering SAP app servers as part of scale down"
-    content = file("scalingartifacts/AutomationRunbooks/sapscaledown_delete.ps1")
+    content = replace(file("scalingartifacts/AutomationRunbooks/sapscaledown_deregister.ps1"),"logicappuri",azurerm_template_deployment.logicapp-sapregister.outputs["logicappuri"])
  publish_content_link {
      uri = "http://microsoft.com"
  }
@@ -174,7 +176,7 @@ resource "azurerm_template_deployment" "logicapp-sapregister" {
     parameters = {
         "LogicAppLocation" = var.location
         "LogicAppName" = var.logicapp-sapregister
-        "SAPConnectionName" = "SapApionnection"
+        "SAPConnectionName" = "SapApiConnection"
         "OnPremGatewayName" = var.odgname
         "OnPremGatewayResourceGroup" = var.odgresourcegroup
         "OnPremGatewayLocation" = var.odglocation

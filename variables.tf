@@ -29,7 +29,7 @@ variable "odgname" {
     description = "On-prem datagateway name to be used for SAP Connectivity"
 }
 
-variable "odgresouregroup" {
+variable "odgresourcegroup" {
     description = "On-Prem datagateway resource group"
 }
 variable "odglocation" {
@@ -52,7 +52,7 @@ variable "sapregisteruser" {
     description = "SAP Username to be used for logon group registration"
 }
 variable "sapodatapasswd" {
-    description = "Keyvault to retreive passwords of SAP users"
+    description = "Password for the sapregisteruser to retreive passwords of SAP users"
 }
 
 variable "sapregisterpasswd" {
