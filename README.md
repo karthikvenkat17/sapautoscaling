@@ -39,11 +39,28 @@ Scaledown is achieved by means of 2 automation runbooks.  The first runbook remo
 
 ## Pre-requisites
 
-- On-prem data gateway for logic app SAP connector to connect to SAP system using RFC. See here for details on how to set this up. [https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection] https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection
+- On-prem data gateway for logic app SAP connector to connect to SAP system using RFC. See here [https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection] https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection for details on how to set this up.
 - ODATA service url on the SAP system for accessing data from /sdf/mon table. Please see sample instructions here for creating the ODATA service.
-- Scripts in this repo uses custom VM images for building new application servers. Create a custom VM image of an existing application server VM by running ``sudo waaagent -deprovision`` (use without the user option to preseve sidadm user) as shown here[https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image] https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image .  Once the image is created note down the image id.  For ongoing image maintenance save the image in **Shared Image Gallery** and use **Azure Image Builder** to keep the image upto date.  If you want to use standard marketplace images, customize the ARM template and shell script appserver_setup.sh accordingly.
+- Custom VM image id for the new app servers to be added.  Scripts in this repo uses custom VM images for building new application servers. Create a custom VM image of an existing application server VM by running ``sudo waaagent -deprovision`` (use without the user option to preseve sidadm user) as shown here[https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image] https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image .  Once the image is created note down the image id.  For ongoing image maintenance save the image in **Shared Image Gallery** and use **Azure Image Builder** to keep the image upto date.  If you want to use standard marketplace images, customize the ARM template and shell script appserver_setup.sh accordingly.
 
 ## Installation
 
--  Clone this github repo and populate terraform.tfvars. Sample file with parameters is availble in this repo.
--  Run ``terraform init`` followed by ``terraform apply`` to deploy the required resources.
+-  Clone this github repo and populate terraform.tfvars. Sample file with parameters is provided.
+-  Run ``terraform init`` followed by ``terraform apply`` to deploy the required resources. The template deploys 2 logic app instances (one for data collection and other for logon group registration), 3 automation runbooks, log analytics workspace, Azure table storage for configuration and a blob container which has the scripts/ARM templates required.
+-  Once the deployment is completed login to Azure portal and check the API connections within logic app used for logon group registration. Check that SAP connection doesnt show any connectivity issues. For office-365 connection you need to authorize it by entering your credentials. 
+-  Create a RunAsAccount within the Automation account created. The RunAsAccount will be used for authentication for managing the resources. 
+
+## Post Steps
+
+- Enable the data collection logic app. Check that the performance data is getting populated in Log analytics workspace. Custom log table will be created in log analytics workspace with naming convention SAPPerfmonSID_CL.
+- Create an action group to trigger SAPScaleOut runbook with required configuration. 
+- Create an alert based on custom log query to alert on work process utilization.  Sample query is shown below. This query is used to trigger an alert when either number of free work process is less than 1 or active dialog work process is greater than 8 or number of user sessions is greater than 50 in an application server. 
+
+```customquery
+SAPPerfmonTST_CL 
+| where No__of_free_RFC_WPs_d <= 1 or Active_Dia_WPs_d  >= 8 or Users_d > 50
+| summarize count() by Servername_s
+| where count_ >= 5
+```
+- Customize the count value, alert logic, period and frequency based on the requirement. See sample settings below 
+![Alerlogic](images/Alertlogic.PNG)
