@@ -96,3 +96,18 @@ variable "scalingconfig" {
         SAPVnet = string
   }))
 }
+
+variable "automationpsmodules" {
+    type = map(string)
+   default = {
+     "Az.Automation" = "https://www.powershellgallery.com/api/v2/package/Az.Automation/1.3.7"
+    "Az.Compute" = "https://www.powershellgallery.com/api/v2/package/Az.Compute/4.2.1"
+     "Az.LogicApp" = "https://www.powershellgallery.com/api/v2/package/Az.LogicApp/1.3.2"
+  "Az.Network" = "https://www.powershellgallery.com/api/v2/package/Az.Network/3.3.0 "
+            "Az.Profile" = "https://www.powershellgallery.com/api/v2/package/Az.Profile/0.7.0"
+       "Az.Resources" = "https://www.powershellgallery.com/api/v2/package/Az.Resources/2.4.0"
+       "Az.Storage" = "https://www.powershellgallery.com/api/v2/package/Az.Storage/2.4.0"
+          }
+   }
+
+

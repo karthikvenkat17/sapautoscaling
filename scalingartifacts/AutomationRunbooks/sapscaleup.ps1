@@ -84,7 +84,7 @@ $deployment = New-AzResourceGroupDeployment `
                 -DeploymentName $deploymentName `
                 -ResourceGroupName $scalingconfig.SAPResourceGroup `
                 -TemplateUri "https://$ConfigStorageAccount.blob.core.windows.net/artifacts/appserver_deploy.json$sas" `
-                -TemplateParameterUri "https://$ConfigStorageAccount.blob.core.windows.net/paramfiles/deploy_$appservername.parameters.json$sas"    
+                -TemplateParameterUri "https://$ConfigStorageAccount.blob.core.windows.net/artifacts/deploy_$appservername.parameters.json$sas"    
 
 
 if ($deployment.ProvisioningState -ne "Succeeded") {
@@ -97,8 +97,8 @@ Write-Output "Deployment of $appservername is successful"
 #Installing app server
     $oldhostname = $scalingconfig.SAPImageHostname
     $Instancenr = $scalingconfig.SAPInstanceNr
-    $scripturi = "https://$ConfigStorageAccount.blob.core.windows.net/artifacts/appserver_install.sh$sas"
-    $ProtectedSettings = @{"fileUris" = @($scripturi); "commandToExecute" = "./appserver_install.sh $SAPSystemID $Instancenr $oldhostname $appservername"};
+    $scripturi = "https://$ConfigStorageAccount.blob.core.windows.net/artifacts/appserver_setup.sh$sas"
+    $ProtectedSettings = @{"fileUris" = @($scripturi); "commandToExecute" = "./appserver_setup.sh $SAPSystemID $Instancenr $oldhostname $appservername"};
     #$ProtectedSettings = @{"storageAccountName" = $ConfigStorageAccount; "storageAccountKey" = $sas };
 
     Set-AzVMExtension `

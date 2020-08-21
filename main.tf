@@ -1,5 +1,5 @@
 provider "azurerm" {
-  version = "=2.10.0"
+  version = "=2.23.0"
   features {}
 }
 
@@ -21,6 +21,38 @@ resource "azurerm_automation_account" "scalingaccount" {
      location = var.location
      resource_group_name = azurerm_resource_group.scaling-rg.name
      sku_name = "Basic"
+}
+
+
+resource "azurerm_automation_module" "azaccountmodule" {
+    name                    = "Az.Accounts"
+    resource_group_name     = azurerm_resource_group.scaling-rg.name
+    automation_account_name = azurerm_automation_account.scalingaccount.name
+    module_link {
+    uri = "https://www.powershellgallery.com/api/v2/package/Az.Accounts/1.9.2"
+  }
+}
+
+
+resource "azurerm_automation_module" "otherpsmodules" {
+    depends_on = [azurerm_automation_module.azaccountmodule]
+    for_each = var.automationpsmodules
+    name                    = each.key
+    resource_group_name     = azurerm_resource_group.scaling-rg.name
+    automation_account_name = azurerm_automation_account.scalingaccount.name
+    module_link {
+    uri = each.value
+      }
+}
+
+resource "azurerm_automation_module" "aztablemodule" {
+    depends_on = [azurerm_automation_module.otherpsmodules]
+    name                    = "AzTable"
+    resource_group_name     = azurerm_resource_group.scaling-rg.name
+    automation_account_name = azurerm_automation_account.scalingaccount.name
+    module_link {
+    uri = "https://www.powershellgallery.com/api/v2/package/AzTable/2.0.3"
+  }
 }
 
 
@@ -129,8 +161,8 @@ resource "azurerm_storage_table_entity" "config" {
     row_key = var.sapsid
     for_each = var.scalingconfig
         entity = {
-                CurrentAppCount = each.value["CurrentAppCount"]
-                            MaxAppCount = each.value["MaxAppCount"]
+        CurrentAppCount = each.value["CurrentAppCount"]
+        MaxAppCount = each.value["MaxAppCount"]
         MinAppAcount = each.value["MinAppAcount"]
         SAPAppLoadBalancer = each.value["SAPAppLoadBalancer"]
         SAPAppNamingPrefix = each.value["SAPAppNamingPrefix"]
@@ -146,7 +178,6 @@ resource "azurerm_storage_table_entity" "config" {
         SAPShutdownTimeout = each.value["SAPShutdownTimeout"]
         SAPSubnet = each.value["SAPSubnet"]
         SAPVnet = each.value["SAPVnet"]
-
            }
 }
 
@@ -188,7 +219,7 @@ resource "azurerm_template_deployment" "logicapp-sapregister" {
         "SAPSystemId" = var.sapsid
         "SAPLogonGroup" = var.saplogongroup
         "office365ConnectionName" = "office365-1"
-        "AlertEmailRecepient" = "alertrecepient"
+        "AlertEmailRecepient" = var.alertrecepient
     }
     deployment_mode = "Incremental"
 }
