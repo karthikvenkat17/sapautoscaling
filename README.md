@@ -39,9 +39,10 @@ Scaledown is achieved by means of 2 automation runbooks.  The first runbook remo
 
 ## Pre-requisites
 
-- On-prem data gateway for logic app SAP connector to connect to SAP system using RFC. See here [https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection] https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection for details on how to set this up.
-- ODATA service url on the SAP system for accessing data from /sdf/mon table. Please see sample instructions here for creating the ODATA service.
-- Custom VM image id for the new app servers to be added.  Scripts in this repo uses custom VM images for building new application servers. Create a custom VM image of an existing application server VM by running ``sudo waaagent -deprovision`` (use without the user option to preseve sidadm user) as shown here[https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image] https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image .  Once the image is created note down the image id.  For ongoing image maintenance save the image in **Shared Image Gallery** and use **Azure Image Builder** to keep the image upto date.  If you want to use standard marketplace images, customize the ARM template and shell script appserver_setup.sh accordingly.
+- On-prem data gateway for logic app SAP connector to connect to SAP system using RFC. See here https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection for details on how to set this up.
+- Enable /sdf/mon data collection in SAP system.
+- ODATA service url on the SAP system for accessing data from /sdf/mon table. Please see sample instructions here for creating the ODATA service. 
+- Custom VM image id for the new app servers to be added.  Scripts in this repo uses custom VM images for building new application servers. Create a custom VM image of an existing application server VM by running ``sudo waaagent -deprovision`` (use without the user option to preseve sidadm user) as shown here https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image .  Once the image is created note down the image id.  For ongoing image maintenance save the image in **Shared Image Gallery** and use **Azure Image Builder** to keep the image upto date.  If you want to use standard marketplace images, customize the ARM template and shell script appserver_setup.sh accordingly.
 
 ## Installation
 
@@ -53,8 +54,8 @@ Scaledown is achieved by means of 2 automation runbooks.  The first runbook remo
 ## Post Steps
 
 - Enable the data collection logic app. Check that the performance data is getting populated in Log analytics workspace. Custom log table will be created in log analytics workspace with naming convention SAPPerfmonSID_CL.
-- Create an action group to trigger SAPScaleOut runbook with required configuration. 
-- Create an alert based on custom log query to alert on work process utilization.  Sample query is shown below. This query is used to trigger an alert when either number of free work process is less than 1 or active dialog work process is greater than 8 or number of user sessions is greater than 50 in an application server. 
+- Create an action group in Azure monitor to trigger SAPScaleOut runbook with required configuration. 
+- Create an alert in Azure monitor based on custom log query to alert on work process utilization and link to the action group created above.  Sample query is shown below. This query is used to trigger an alert when either number of free work process is less than 1 or active dialog work process is greater than 8 or number of user sessions is greater than 50 in an application server. 
 
 ```customquery
 SAPPerfmonTST_CL 
