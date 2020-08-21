@@ -42,7 +42,7 @@
     Write-Output "Stopping Appserver $appservername"
     $Instancenr = $scalingconfig.SAPInstancenr
     $Timeout = $scalingconfig.SAPShutdownTimeout
-    $scripturi = "https://$ConfigStorageAccount.blob.core.windows.net/script/appserver_decom.sh"
+    $scripturi = "https://$ConfigStorageAccount.blob.core.windows.net/artifacts/appserver_decom.sh"
     $Settings = @{"fileUris" = @($scripturi); "commandToExecute" = "./appserver_decom.sh $SAPSystemID $Instancenr $Timeout"};
     $ProtectedSettings = @{"storageAccountName" = $ConfigStorageAccount; "storageAccountKey" = $storageaccountkey.value };
 
