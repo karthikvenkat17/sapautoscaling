@@ -25,6 +25,16 @@ Scaledown is achieved by means of 2 automation runbooks.  The first runbook remo
  - Utilization based
  - Alert status
 
+## Scaling Configuration Table
+
+All properties required for scaling are maintained in a config table within a storage account in Azure and are configurable per SID.  The details of the config are explained 
+
+| Configuration | How it is used |
+----------------------------------
+| CurrentAppCount | This is used to track the current app server count. It is when app servers are added or deleted|
+ 
+
+
 ##  :bulb: Solution Highlights
 
 - Modular – Auto scaling solution can be plugged into customer’s existing monitoring and alerting infrastructure (including solution manager) by using webhooks to trigger the automation runbook.
