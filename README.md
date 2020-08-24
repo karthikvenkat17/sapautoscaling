@@ -40,7 +40,13 @@ All properties required for scaling are maintained in a config table within a st
 | SAPCustomImageId | Custom VM image to be used for new app server creation |
 | SAPDeleteTimeout | Time delay in minutes between removing app servers from logon groups to stopping/deleting them. Min value is 10 |
 | SAPShutdownTImeout | Timeout value in seconds to be used for SAP softshutdown |
-
+| SAPImageHostName | SAP app server hostname from which custom VM image was created. SAP profiles/home directories are created by search and replace of this hostname with new hostname. Refer appserver_setup.sh for details |
+| SAPInstanceNr | Instance number of SAP appserver to be created. Needs to be the same as the appserver used to create the image |
+| SAPLogonGroups | SMLG logon groups the new appservers should be added to. Multiple values can be entered comma separated |
+| SAPServerGroups | RZ12 Server groups the new appservers should be added to. Multiple values can be entered comma separated |
+| SAPRegion | Azure region for creating the new appservers |
+| SAPVnet | Azure VNET for creating new appservers |
+| SAPSubnet |  Azure Subnet for creating the new appservers |
  
 
 
