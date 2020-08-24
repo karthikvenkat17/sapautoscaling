@@ -31,7 +31,16 @@ All properties required for scaling are maintained in a config table within a st
 
 | Configuration | How it is used |
 | --- | --- |
-| CurrentAppCount | This is used to track the current app server count. It is when app servers are added or deleted |
+| CurrentAppCount | Used to track the current app server count. Updated by runbooks when app servers are added or deleted |
+| MaxAppCount | Max. number of app servers for scale out. If CurrentAppCount equals MaxAppCount no further app servers will be added. |
+| MinAppCount | Min. number of app servers for scale down. If CurrentAppCount equals MinAppCount no further app servers will be removed/deleted. |
+| SAPAppLoadBalancer | Azure load balancer to which new app servers need to be added to |
+| SAPAppNamingPrefix | Prefix to be used for names of new app server. For example if prefix is tst-app-vm-2 and current app server count is 2, new app server wil be created with name tst-app-vm-3 |
+| SAPAppVmSize | Size of the new app server VM to be created |
+| SAPCustomImageId | Custom VM image to be used for new app server creation |
+| SAPDeleteTimeout | Time delay in minutes between removing app servers from logon groups to stopping/deleting them. Min value is 10 |
+| SAPShutdownTImeout | Timeout value in seconds to be used for SAP softshutdown |
+
  
 
 
