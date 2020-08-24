@@ -35,7 +35,7 @@ All properties required for scaling are maintained in a config table within a st
 | MaxAppCount | Max. number of app servers for scale out. If CurrentAppCount equals MaxAppCount no further app servers will be added. |
 | MinAppCount | Min. number of app servers for scale down. If CurrentAppCount equals MinAppCount no further app servers will be removed/deleted. |
 | SAPAppLoadBalancer | Azure load balancer to which new app servers need to be added to |
-| SAPAppNamingPrefix | Prefix to be used for names of new app server. For example if prefix is tst-app-vm-2 and current app server count is 2, new app server wil be created with name tst-app-vm-3 |
+| SAPAppNamingPrefix | Prefix to be used for names of new app server. For example if prefix is tst-app-vm- and current app server count is 2, new app server wil be created with name tst-app-vm-3 |
 | SAPAppVmSize | Size of the new app server VM to be created |
 | SAPCustomImageId | Custom VM image to be used for new app server creation |
 | SAPDeleteTimeout | Time delay in minutes between removing app servers from logon groups to stopping/deleting them. Min value is 10 |
@@ -75,6 +75,15 @@ All properties required for scaling are maintained in a config table within a st
 -  Run ``terraform init`` followed by ``terraform apply`` to deploy the required resources. The template deploys 2 logic app instances (one for data collection and other for logon group registration), 3 automation runbooks, log analytics workspace, Azure table storage for configuration and a blob container which has the scripts/ARM templates required.
 -  Once the deployment is completed login to Azure portal and check the API connections within logic app used for logon group registration. Check that SAP connection doesnt show any connectivity issues. For office-365 connection you need to authorize it by entering your credentials. 
 -  Create a RunAsAccount within the Automation account created. The RunAsAccount will be used for authentication for managing the resources. 
+-  Use Azure storage explorer to change the data type for following fields of scalingconfig table to int32 from string. Due to an issue with Terraform provider these get created as string by default.
+ 
+ | PropertyName | Type |
+ | --- | ---
+ | CurrentAppCount | Int32 |
+ | MaxAppCount | Int32 |
+ | MinAppCount | Int32 |
+ | SAPDeleteTimeout | Int32 |
+ | SAPShutdownTimeout | Int32 |
 
 ## Post Steps
 
