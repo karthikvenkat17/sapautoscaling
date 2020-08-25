@@ -15,11 +15,11 @@ This terraform template sets up components required to achieve auto scaling of S
 
 SAP work process utilization data is collected from /sdf/mon table using logic app and dumped to log analytics workspace. Azure monitor is then used to query the table and alert based on set thresholds. The alert triggers an automation runbook which creates new app servers using ARM templates and uses logic app to add the new SAP application server to logon groups. All config related to scaling is maintained in a table (called scalingconfig) within storage account. This includes properties of the new VM to be created, logon/server groups to be added to, max/min count for application servers etc. 
 
-## SAP Application Server Scale down Architecture
+## SAP Application Server Scale in Architecture
 
 ![scaledown image](images/scaledown.PNG)
 
-Scaledown is achieved by means of 2 automation runbooks.  The first runbook removes the application servers from the logon/server groups using logic app and schedules the second runbook based on a delay configurable using the scalingconfig table. This helps in existing user sessions to be drained out of SAP application server to be removed. The second runbook does a soft shutdown of the application server (shutdown timeout can also be configured using the config table) and then deletes the application servers.  Trigger for the scale down would depend on customer scenarios. It can be configured using one of the following methods
+Scale-in is achieved by means of 2 automation runbooks.  The first runbook removes the application servers from the logon/server groups using logic app and schedules the second runbook based on a delay configurable using the scalingconfig table. This helps in existing user sessions to be drained out of SAP application server to be removed. The second runbook does a soft shutdown of the application server (shutdown timeout can also be configured using the config table) and then deletes the application servers.  Trigger for the scale in would depend on customer scenarios. It can be configured using one of the following methods
 
  - Schedule based - Schedule scale down runbook to be executed at the end of business day everyday. 
  - Utilization based
@@ -33,7 +33,7 @@ All properties required for scaling are maintained in a config table within a st
 | --- | --- |
 | CurrentAppCount | Used to track the current app server count. Updated by runbooks when app servers are added or deleted |
 | MaxAppCount | Max. number of app servers for scale out. If CurrentAppCount equals MaxAppCount no further app servers will be added. |
-| MinAppCount | Min. number of app servers for scale down. If CurrentAppCount equals MinAppCount no further app servers will be removed/deleted. |
+| MinAppCount | Min. number of app servers for scale in. If CurrentAppCount equals MinAppCount no further app servers will be removed/deleted. |
 | SAPAppLoadBalancer | Azure load balancer to which new app servers need to be added to |
 | SAPAppNamingPrefix | Prefix to be used for names of new app server. For example if prefix is tst-app-vm- and current app server count is 2, new app server wil be created with name tst-app-vm-3 |
 | SAPAppVmSize | Size of the new app server VM to be created |
