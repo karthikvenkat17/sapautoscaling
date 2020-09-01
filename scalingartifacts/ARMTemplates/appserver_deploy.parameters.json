@@ -11,15 +11,6 @@
         "virtualNetworkId": {
             "value": ""
         },
-        "publicIpAddressType": {
-            "value": "Static"
-        },
-        "publicIpAddressName": {
-            "value": ""
-        },
-        "publicIpAddressSku": {
-            "value": "Standard"
-        },
         "virtualMachineName": {
             "value": ""
         },
@@ -34,6 +25,9 @@
         },
         "virtualMachineSize": {
             "value": ""
+        },
+        "availabilitySet" : {
+            "value" : ""
         },
         "adminUsername": {
             "value": "azureuser"

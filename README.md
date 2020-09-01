@@ -44,6 +44,7 @@ All properties required for scaling are maintained in a config table within a st
 | SAPInstanceNr | Instance number of SAP appserver to be created. Needs to be the same as the appserver used to create the image |
 | SAPLogonGroups | SMLG logon groups the new appservers should be added to. Multiple values can be entered comma separated |
 | SAPServerGroups | RZ12 Server groups the new appservers should be added to. Multiple values can be entered comma separated |
+| SAPAvSet | Availability set of the SAP application servers. Newly created app servers will be added to this AvSet |
 | SAPRegion | Azure region for creating the new appservers |
 | SAPVnet | Azure VNET for creating new appservers |
 | SAPSubnet |  Azure Subnet for creating the new appservers |
@@ -64,10 +65,15 @@ All properties required for scaling are maintained in a config table within a st
 
 ## Pre-requisites
 
-- On-prem data gateway for logic app SAP connector to connect to SAP system using RFC. See here https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection for details on how to set this up.
+- On-prem data gateway for logic app SAP connector to connect to SAP system using RFC should be installed. See [here!] (https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection) for details on how to set this up. The VM where On-prem data gateway is running also needs to have the SAP .Net Connector installed. See details [here!](https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-using-sap-connector)
 - Enable /sdf/mon data collection in SAP system.
 - ODATA service url on the SAP system for accessing data from /sdf/mon table. Please see sample instructions here for creating the ODATA service. 
-- Custom VM image id for the new app servers to be added.  Scripts in this repo uses custom VM images for building new application servers. Create a custom VM image of an existing application server VM by running ``sudo waaagent -deprovision`` (use without the user option to preseve sidadm user) as shown here https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image .  Once the image is created note down the image id.  For ongoing image maintenance save the image in **Shared Image Gallery** and use **Azure Image Builder** to keep the image upto date.  If you want to use standard marketplace images, customize the ARM template and shell script appserver_setup.sh accordingly.
+- Custom VM image id for the new app servers to be added.  Scripts in this repo uses custom VM images for building new application servers. Create a custom VM image of an existing application server VM by running ``sudo waaagent -deprovision`` (use without the user option to preseve sidadm user) as shown [here!] (https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image) .  Once the image is created note down the image id.  For ongoing image maintenance save the image in **Shared Image Gallery** and use **Azure Image Builder** to keep the image upto date.  If you want to use standard marketplace images, customize the ARM template and shell script appserver_setup.sh accordingly.
+- DNS updates needs to be taken care for the newly created VMs. You could either have the DNS records pre-created for the new set of application servers or use dynamic updates. With Azure DNS you have the option of autoregisration. See below link for details.
+
+https://docs.microsoft.com/en-us/azure/dns/private-dns-autoregistration
+https://docs.microsoft.com/en-us/azure/virtual-network/virtual-networks-name-resolution-ddns
+
 
 ## Installation
 

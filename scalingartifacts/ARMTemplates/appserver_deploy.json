@@ -11,15 +11,6 @@
         "virtualNetworkId": {
             "type": "string"
         },
-        "publicIpAddressType": {
-            "type": "string"
-        },
-        "publicIpAddressName": {
-            "type" : "string"
-        },      
-        "publicIpAddressSku": {
-            "type": "string"
-        },
         "networkInterfaceName": {
             "type": "string"
         },
@@ -40,6 +31,9 @@
         },
         "customimageid" : {
             "type" : "string"
+        },
+        "availabilitySet" : {
+            "type" : "string"
         }
      },
     "variables": {
@@ -47,27 +41,11 @@
         "subnetRef": "[concat(variables('vnetId'), '/subnets/', parameters('subnetName'))]"
     },
     "resources": [
-        {
-            "name": "[parameters('publicIpAddressName')]",
-            "type": "Microsoft.Network/publicIpAddresses",
-            "apiVersion": "2019-07-01",
-            "location": "[parameters('location')]",
-            "properties": {
-                "publicIpAllocationMethod": "[parameters('publicIpAddressType')]"
-            },
-            "sku": {
-                "name": "[parameters('publicIpAddressSku')]"
-            }
-        },
-              
-        {
+            {
             "name": "[parameters('networkInterfaceName')]",
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2019-07-01",
             "location": "[parameters('location')]",
-            "dependsOn": [
-                "[concat('Microsoft.Network/publicIpAddresses/', parameters('publicIpAddressName'))]"
-            ],
             "properties": {
                 "ipConfigurations": [
                     {
@@ -76,10 +54,7 @@
                             "subnet": {
                                 "id": "[variables('subnetRef')]"
                             },
-                            "privateIPAllocationMethod": "Dynamic",
-                            "publicIpAddress": {
-                                "id": "[resourceId(resourceGroup().name, 'Microsoft.Network/publicIpAddresses', parameters('publicIpAddressName'))]"
-                            }
+                            "privateIPAllocationMethod": "Dynamic"
                         }
                     }
                 ]
@@ -96,6 +71,10 @@
             "properties": {
                 "hardwareProfile": {
                     "vmSize": "[parameters('virtualMachineSize')]"
+                },
+                "availabilitySet" : {
+                    "id" : "[resourceId(resourceGroup().name,'Microsoft.Compute/availabilitySets',parameters('availabilitySet'))]"
+
                 },
                 "osProfile": {
                     "computerName": "[parameters('virtualMachineName')]",

@@ -74,8 +74,9 @@ $params.parameters.subnetName.value = $scalingconfig.SAPSubnet
 $params.parameters.virtualMachineName.value = $appservername
 $params.parameters.virtualMachineSize.value = $scalingconfig.SAPAppVmSize
 $params.parameters.customimageid.value = $scalingconfig.SAPCustomImageId
+$params.parameters.availabilitySet.value = $scalingconfig.SAPAvSet
 $params.parameters.networkInterfaceName.value = "$appservername-nic"
-$params.parameters.publicIpAddressName.value = "$appservername-publicIp"
+
 
 $params | ConvertTo-Json | set-content "$temppath\appserver_deploy.parameters.json"
 Set-AzStorageBlobContent -Container "artifacts" -Blob "deploy_$appservername.parameters.json" -File "$temppath\appserver_deploy.parameters.json" -Context $storageaccountctx -Force
@@ -174,7 +175,7 @@ else {
 }
 
 catch{
-   Write-Output "Appserver scaling failed. See previous errors"
    Write-Output $_.Exception.Message`n
+   Write-Output "Appserver scaling failed. See previous errors"
    Exit 1
 }

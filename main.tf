@@ -9,7 +9,7 @@ resource "azurerm_resource_group" "scaling-rg" {
 }
 
 resource "azurerm_log_analytics_workspace" "sap-log" {
-    name = "SAPMonitoringWorkspace"
+    name = var.loganalyticsworkspace
     resource_group_name = azurerm_resource_group.scaling-rg.name
     location = var.location
     sku = "PerGB2018"
@@ -176,6 +176,7 @@ resource "azurerm_storage_table_entity" "config" {
         SAPResourceGroup = each.value["SAPResourceGroup"]
         SAPServerGroups = each.value["SAPServerGroups"]
         SAPShutdownTimeout = each.value["SAPShutdownTimeout"]
+        SAPAvSet = each.value["SAPAvSet"]
         SAPSubnet = each.value["SAPSubnet"]
         SAPVnet = each.value["SAPVnet"]
            }

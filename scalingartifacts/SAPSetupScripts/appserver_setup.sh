@@ -34,7 +34,7 @@ fi
 ##Main program##
 ##Setting up home directory##
 echo "Backing up the home directory"
-homedir=$(echo ~$sidadm)
+homedir="/home/$sidadm"
 cp -pr $homedir $homedir.old
 
 echo "Replacing host name in the home directory"
