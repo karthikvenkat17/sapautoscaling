@@ -72,6 +72,7 @@ All properties required for scaling are maintained in a config table within a st
 - DNS updates needs to be taken care for the newly created VMs. You could either have the DNS records pre-created for the new set of application servers or use dynamic updates. With Azure DNS you have the option of autoregisration. See below link for details.
 
 https://docs.microsoft.com/en-us/azure/dns/private-dns-autoregistration
+
 https://docs.microsoft.com/en-us/azure/virtual-network/virtual-networks-name-resolution-ddns
 
 
