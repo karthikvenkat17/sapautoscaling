@@ -21,7 +21,7 @@ SAP work process utilization data is collected from /sdf/mon table using logic a
 
 Scale-in is achieved by means of 2 automation runbooks.  The first runbook removes the application servers from the logon/server groups using logic app and schedules the second runbook based on a delay configurable using the scalingconfig table. This helps in existing user sessions to be drained out of SAP application server to be removed. The second runbook does a soft shutdown of the application server (shutdown timeout can also be configured using the config table) and then deletes the application servers.  Trigger for the scale in would depend on customer scenarios. It can be configured using one of the following methods
 
- - Schedule based - Schedule scale down runbook to be executed at the end of business day everyday. 
+ - Schedule based - Schedule scale in runbook to be executed at the end of business day everyday. 
  - Utilization based
  - Alert status
 
@@ -95,8 +95,8 @@ https://docs.microsoft.com/en-us/azure/virtual-network/virtual-networks-name-res
 ## Post Steps
 
 - Enable the data collection logic app. Check that the performance data is getting populated in Log analytics workspace. Custom log table will be created in log analytics workspace with naming convention SAPPerfmonSID_CL.
-- Create an action group in Azure monitor to trigger SAPScaleOut runbook with required configuration. 
-- Create an alert in Azure monitor based on custom log query to alert on work process utilization and link to the action group created above.  Sample query is shown below. This query is used to trigger an alert when either number of free work process is less than 1 or active dialog work process is greater than 8 or number of user sessions is greater than 50 in an application server. 
+- Create 2 separate action groups in Azure monitor to trigger the ScaleOut and ScaleIn runbooks with required parameters. 
+- Create an SAP Scale Out alert in Azure monitor based on custom log query to alert on work process utilization and link to the ScaleOut action group created above.  Sample query is shown below. This query is used to trigger an alert when either number of free work process is less than 1 or active dialog work process is greater than 8 or number of user sessions is greater than 50 in an application server. 
 
 ```customquery
 SAPPerfmonTST_CL 
@@ -106,3 +106,13 @@ SAPPerfmonTST_CL
 ```
 - Customize the count value, alert logic, period and frequency based on the requirement. See sample settings below 
 ![Alerlogic](images/Alertlogic.PNG)
+
+- For Scaling In based on utilization create an alert in Azure monitor based on work process utilization data and link to the Scale In Action group created in previous step. Sample query for Scaling in
+
+```customquery
+SAPPerfmonTST_CL 
+| where No__of_free_RFC_WPs_d >= 7 or Active_Dia_WPs_d  <= 2 or Users_d < 50
+| summarize count() by Servername_s
+| where count_ >= 30
+```
+- Customize the count value, alert logic, period and frequency based on the requirement. Use Supress alert feature to reduce the number of times the alert gets generated.
