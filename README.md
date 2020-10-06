@@ -13,7 +13,7 @@ This terraform template sets up components required to achieve auto scaling of S
 
 ![scaleout image](images/scaleout.PNG)
 
-SAP work process utilization data is collected from /sdf/mon table using logic app and dumped to log analytics workspace. Azure monitor is then used to query the table and alert based on set thresholds. The alert triggers an automation runbook which creates new app servers using ARM templates and uses logic app to add the new SAP application server to logon groups. All config related to scaling is maintained in a table (called scalingconfig) within storage account. This includes properties of the new VM to be created, logon/server groups to be added to, max/min count for application servers etc. 
+SAP work process utilization data is collected from /SDF/MON_HEADER (or /SDF/SMON_HEADER depending on what is scheduled) table using logic app and dumped to log analytics workspace. Azure monitor is then used to query the table and alert based on set thresholds. The alert triggers an automation runbook which creates new app servers using ARM templates and uses logic app to add the new SAP application server to logon groups. All config related to scaling is maintained in a table (called scalingconfig) within storage account. This includes properties of the new VM to be created, logon/server groups to be added to, max/min count for application servers etc. 
 
 ## SAP Application Server Scale in Architecture
 
@@ -66,8 +66,8 @@ All properties required for scaling are maintained in a config table within a st
 ## Pre-requisites
 
 - On-prem data gateway for logic app SAP connector to connect to SAP system using RFC should be installed. See here https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-gateway-connection for details on how to set this up. The VM where On-prem data gateway is running also needs to have the SAP .Net Connector installed. See here https://docs.microsoft.com/en-us/azure/logic-apps/logic-apps-using-sap-connector
-- Enable /sdf/mon data collection in SAP system.
-- ODATA service url on the SAP system for accessing data from /sdf/mon table. Please see sample instructions here for creating the ODATA service. 
+- Enable /SDF/MON or /SDF/SMON data collection is enabled in SAP system. See here for details https://wiki.scn.sap.com/wiki/display/CPP/All+about+SMON#AllaboutSMON-Purpose
+- ODATA service url on the SAP system for accessing data from /SDF/MON_HEADER table. Please see sample instructions ![here](docs/sapodata.md) for creating the ODATA service. 
 - Custom VM image id for the new app servers to be added.  Scripts in this repo uses custom VM images for building new application servers. Create a custom VM image of an existing application server VM by running ``sudo waaagent -deprovision`` (use without the user option to preseve sidadm user) as shown here https://docs.microsoft.com/en-us/azure/virtual-machines/linux/capture-image .  Once the image is created note down the image id.  For ongoing image maintenance save the image in **Shared Image Gallery** and use **Azure Image Builder** to keep the image upto date.  If you want to use standard marketplace images, customize the ARM template and shell script appserver_setup.sh accordingly.
 - DNS updates needs to be taken care for the newly created VMs. You could either have the DNS records pre-created for the new set of application servers or use dynamic updates. With Azure DNS you have the option of autoregisration. See below link for details.
 
