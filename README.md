@@ -111,7 +111,7 @@ SAPPerfmonTST_CL
 
 ```customquery
 SAPPerfmonTST_CL 
-| where No__of_free_RFC_WPs_d >= 7 or Active_Dia_WPs_d  <= 2 or Users_d < 50
+| where No__of_free_RFC_WPs_d >= 7 and Active_Dia_WPs_d  <= 2 and Users_d < 50
 | summarize count() by Servername_s
 | where count_ >= 30
 ```
