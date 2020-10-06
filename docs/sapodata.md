@@ -18,7 +18,7 @@
 
 - Save and generate the service using the Generate Runtime Objects option at the top
 
-- Redefine the GET_ENTTITYSET method with the below code. Replace the table name with **/sdf/smon_header** if SMON is being used. We are not going to use the other methods in this demo so we will leave them empty. Save and activate the objects
+- Redefine the GET_ENTTITYSET method to fetch data based on filter. Sample code is shown below (Replace the table name with **/sdf/smon_header** if SMON is being used). We are not going to use the other methods in this demo so we will leave them empty. Save and activate the objects
 
 ``` abapcode
 data: lv_osql_where_clause type string.
@@ -27,8 +27,6 @@ select * from /sdf/mon_header
       into corresponding fields of table @et_entityset
       where (lv_osql_where_clause).
 ```
-![se80modify](../images/se80_modify.PNG)
-
 - Register and activate the service using transaction /IWFND/MAINT_SERVICE in gateway system.
 - Check using the gateway client that you are able to query the service based on filter crtieria. See below for example
 
