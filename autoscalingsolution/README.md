@@ -1,10 +1,5 @@
 # Auto scaling of SAP app servers in Azure
-This terraform template sets up components required to achieve auto scaling of SAP application servers in Azure based on SAP performance metrics. 
-
-[Solution Overview](#solution-overview)
-
-[Setup Instructions](#setup-instructions)
-
+This folder contains Terraform template to deploy SAP autoscaling solution. 
 
 
 # Solution Overview 

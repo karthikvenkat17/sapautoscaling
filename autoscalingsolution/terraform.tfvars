@@ -6,14 +6,10 @@ location = "NorthEurope"
 storageaccount = "sapautoscalestorage"
 #Automation account name to be used for autoscaling
 automationaccount = "sapautoscale"
-#Name of the LogicApp to be used for data collection from SAP
-logicapp-datacoll = "logicapp-datacoll"
 #Name of the LogicApp to be used for logon group registration
 logicapp-sapregister = "logicapp-sapregister"
 #SAP System ID for which autoscaling is configured. 
 sapsid = "TST"
-#Log analytics workspace to store SAP performance data. This workspace will be created by the template
-loganalyticsworkspace = "sapmonloganalytics1" 
 #Email recepient to receive notifications related to autoscaling
 alertrecepient = "kavenka@microsoft.com"
 #Name of the Onprem data gateway to be used by logicapp SAP connector. This should already be installed and configured
