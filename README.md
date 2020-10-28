@@ -7,7 +7,7 @@ This repository provides an approach and sample code for auto scaling SAP applic
 
 ## SAP telemetry collection
 
-SAP telemetry collection architecture is as shown below
+SAP telemetry collection architecture is as shown below. Here we ingest the SAP performance metrics data from /SDF/MON_HEADER (or /SDF/SMON_HEADER depending on what is scheduled) using Logic App into a custom log table in log analytics workspace. 
 
 ![sap telemetry](images/sap_telemetry.png)
 
@@ -17,16 +17,20 @@ SAP telemetry collection architecture is as shown below
 
 ![Autoscaleout](images/Autoscaleout.png)
 
-SAP work process utilization data is collected from /SDF/MON_HEADER (or /SDF/SMON_HEADER depending on what is scheduled) table using logic app and dumped to log analytics workspace. Azure monitor is then used to query the table and alert based on set thresholds. The alert triggers an automation runbook which creates new app servers using ARM templates and uses logic app to add the new SAP application server to logon groups. All config related to scaling is maintained in a table (called scalingconfig) within storage account. This includes properties of the new VM to be created, logon/server groups to be added to, max/min count for application servers etc. 
+- Using Azure Monitor create a log alert which queries the Custom log table with the SAP performance data and creates an alert when specific threshold is breached. 
+- The alert triggers a Azure Automation Powershell runbook. The runbook checks the Scaling Config table to see if current app server count is equal to max. app server count. If yes it exits without performing any action. 
+- If not it triggers an ARM template to create a new application server based on Custom VM Image (of a pre-built app server).
+- After successful creation of app server, the runbook calls Logic app to regiser new application server in SAP Logon and Server groups. Groups information are fetched from Config table.
+- Finally the PS runbook updates the Current app server count in the Scaling Config table.
 
 ### SAP Application Server Scale in Architecture
 
 ![Autoscalein](images/AutoScaleIn.png)
 
-Scale-in is achieved by means of 2 automation runbooks.  The first runbook removes the application servers from the logon/server groups using logic app and schedules the second runbook based on a delay configurable using the scalingconfig table. This helps in existing user sessions to be drained out of SAP application server to be removed. The second runbook does a soft shutdown of the application server (shutdown timeout can also be configured using the config table) and then deletes the application servers.  Trigger for the scale in would depend on customer scenarios. It can be configured using one of the following methods
-
- - Schedule based - Schedule scale in runbook to be executed at the end of business day everyday. 
- - Utilization based
- - Alert status
-
-
+- Using Azure Monitor create a log alert which queries the Custom log table with the SAP performance data and creates an alert when specific threshold is breached. 
+- The alert triggers a Azure Automation Powershell runbook. The runbook checks the Scaling Config table to see if current app server count is equal to min. app server. If yes it exits without performing any action. 
+- If not the runbook calls Logic app to to de-register the application servers from Logon and Server groups. Group information is fetched from the Config table.
+- The runbook then schedules a second runbook based on Delay timeout defined in the config table. This allows exising user sessions/jobs to be drained from the application server before its Stopped. 
+- The second runbook issues a SoftShutdown Command on the application server with a timeout fetched from config table.   
+- Once the SAP application server is successfully stopped, the corresponding Azure resources (VM, NIC and disks) are deleted from within the runbook. 
+- Finally the PS runbook updates the Current app server count in the Scaling Config table.
