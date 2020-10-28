@@ -67,7 +67,7 @@ SAPPerfmonTST_CL
 | where count_ >= 5
 ```
 - Customize the count value, alert logic, period and frequency based on the requirement. See sample settings below 
-![Alerlogic](images/Alertlogic.PNG)
+![Alerlogic](../images/Alertlogic.PNG)
 
 - For Scaling In based on utilization create an alert in Azure monitor based on work process utilization data and link to the Scale In Action group created in previous step. Sample query for Scaling in
 
