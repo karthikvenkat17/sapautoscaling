@@ -18,10 +18,6 @@ odgname = "kvscalinggw"
 odgresourcegroup = "kvsapautoscaling"
 #Location of the Onprem data gateway
 odglocation = "WestCentralUS"
-#Data collection interval in minutes. This will be used by the recurrence trigger of data collection logic app
-datacollectioninterval = 5
-#Odata url to be used by data collection logic app. 
-sapodatauri = "http://40.69.93.19:8000/sap/opu/odata/sap/ZSCALINGDEMO_SRV/ZSDFMONSet"
 #Instance number of the SAP system to be configured for autoscaling
 sapinstnacenr = 00
 #SAP User to be used by data collection logic app 

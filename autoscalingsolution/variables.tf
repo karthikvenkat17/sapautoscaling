@@ -39,7 +39,7 @@ variable "sapregisteruser" {
     description = "SAP Username to be used for logon group registration"
 }
 variable "sapregisterpasswd" {
-    description = "Resource group of Keyvault to retreive passwords of SAP users"
+    description = "Password for the SAP user to be used for logon group registration"
 }
 
 variable "sapclient" {
