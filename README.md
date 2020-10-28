@@ -11,7 +11,11 @@ SAP telemetry collection architecture is as shown below. Here we ingest the SAP 
 
 ![sap telemetry](images/sap_telemetry.png)
 
+Additionl details and Terraform template for deploying the solution can be found [here](telemetry/README.md)
+
 ## SAP AutoScaling Solution
+
+Below is an overview of the SAP App server Scale in and Scale out architecture. Additional details and Terraform template for deploying the solution can be found [here](autoscaling/README.md)
 
 ### SAP Application Server Scale Out Architecture 
 

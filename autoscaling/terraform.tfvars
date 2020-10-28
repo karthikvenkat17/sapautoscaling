@@ -1,13 +1,13 @@
 #ResourceGroup to deploy resources related to autoscaling
-rgname = "sapautoscale-test"
+rgname = "sapautoscale-test1"
 #Location to deploy resources related to autoscaling
-location = "NorthEurope"
+location = "WestEurope"
 #Storage account name to be used for autoscaling config
-storageaccount = "sapautoscalestorage"
+storageaccount = "sapautoscalestorage12"
 #Automation account name to be used for autoscaling
-automationaccount = "sapautoscale"
+automationaccount = "sapautoscale12"
 #Name of the LogicApp to be used for logon group registration
-logicapp-sapregister = "logicapp-sapregister"
+logicapp-sapregister = "logicapp-sapregister12"
 #SAP System ID for which autoscaling is configured. 
 sapsid = "TST"
 #Email recepient to receive notifications related to autoscaling

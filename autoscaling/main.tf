@@ -113,7 +113,7 @@ resource "azurerm_storage_blob" "scalingscripts1" {
     storage_account_name = azurerm_storage_account.scalingstorageaccount.name
     storage_container_name = azurerm_storage_container.scalingartifacts.name
     type = "Block"
-    source  = "./scalingartifacts/SAPSetupScripts/appserver_install.sh"
+    source  = "./scalingartifacts/SAPSetupScripts/appserver_setup.sh"
 }
 
 resource "azurerm_storage_blob" "scalingscripts2" {
