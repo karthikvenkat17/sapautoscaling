@@ -32,14 +32,11 @@ variable "odglocation" {
 variable "sapinstnacenr" {
     description = "SAP Instance number"
 }
-variable "sapodatauser" {
-    description = "SAP Username to be used for Odata calls"
-}
 variable "sapregisteruser" {
     description = "SAP Username to be used for logon group registration"
 }
 variable "sapregisterpasswd" {
-    description = "Password for the SAP user to be used for logon group registration"
+    description = "Password for the SAP register user"
 }
 
 variable "sapclient" {

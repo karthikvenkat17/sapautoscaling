@@ -27,7 +27,7 @@ variable "sapodatauser" {
     description = "SAP Username to be used for Odata calls"
 }
 variable "sapodatapasswd" {
-    description = "Password for the sapregisteruser to retreive passwords of SAP users"
+    description = "Password for the SAP Odata user"
 }
 variable "sapclient" {
     description = "Client number of SAP system"

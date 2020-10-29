@@ -20,8 +20,6 @@ odgresourcegroup = "kvsapautoscaling"
 odglocation = "WestCentralUS"
 #Instance number of the SAP system to be configured for autoscaling
 sapinstnacenr = 00
-#SAP User to be used by data collection logic app 
-sapodatauser = "demouser"
 #SAP User to be used by logon group registration logic app
 sapregisteruser = "demouser"
 #SAP System Client number
