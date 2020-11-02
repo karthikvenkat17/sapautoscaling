@@ -3,30 +3,21 @@ provider "azurerm" {
   features {}
 }
 
-resource "azurerm_resource_group" "scaling-rg" {
+data "azurerm_resource_group" "scaling-rg" {
     name = var.rgname
-    location = var.location
-}
-
-resource "azurerm_log_analytics_workspace" "sap-log" {
-    name = var.loganalyticsworkspace
-    resource_group_name = azurerm_resource_group.scaling-rg.name
-    location = var.location
-    sku = "PerGB2018"
-    retention_in_days = "30"
 }
 
 resource "azurerm_automation_account" "scalingaccount" {
      name = var.automationaccount
      location = var.location
-     resource_group_name = azurerm_resource_group.scaling-rg.name
+     resource_group_name = data.azurerm_resource_group.scaling-rg.name
      sku_name = "Basic"
 }
 
 
 resource "azurerm_automation_module" "azaccountmodule" {
     name                    = "Az.Accounts"
-    resource_group_name     = azurerm_resource_group.scaling-rg.name
+    resource_group_name     = data.azurerm_resource_group.scaling-rg.name
     automation_account_name = azurerm_automation_account.scalingaccount.name
     module_link {
     uri = "https://www.powershellgallery.com/api/v2/package/Az.Accounts/1.9.2"
@@ -38,7 +29,7 @@ resource "azurerm_automation_module" "otherpsmodules" {
     depends_on = [azurerm_automation_module.azaccountmodule]
     for_each = var.automationpsmodules
     name                    = each.key
-    resource_group_name     = azurerm_resource_group.scaling-rg.name
+    resource_group_name     = data.azurerm_resource_group.scaling-rg.name
     automation_account_name = azurerm_automation_account.scalingaccount.name
     module_link {
     uri = each.value
@@ -48,7 +39,7 @@ resource "azurerm_automation_module" "otherpsmodules" {
 resource "azurerm_automation_module" "aztablemodule" {
     depends_on = [azurerm_automation_module.otherpsmodules]
     name                    = "AzTable"
-    resource_group_name     = azurerm_resource_group.scaling-rg.name
+    resource_group_name     = data.azurerm_resource_group.scaling-rg.name
     automation_account_name = azurerm_automation_account.scalingaccount.name
     module_link {
     uri = "https://www.powershellgallery.com/api/v2/package/AzTable/2.0.3"
@@ -60,7 +51,7 @@ resource "azurerm_automation_runbook" "scaleout" {
     depends_on = [azurerm_template_deployment.logicapp-sapregister]
     name = "SAPScaleOut"
     location = var.location
-    resource_group_name = azurerm_resource_group.scaling-rg.name
+    resource_group_name = data.azurerm_resource_group.scaling-rg.name
     automation_account_name = azurerm_automation_account.scalingaccount.name
     runbook_type = "PowerShell"
     log_progress = "true"
@@ -75,7 +66,7 @@ resource "azurerm_automation_runbook" "scaleout" {
 resource "azurerm_automation_runbook" "scaledown-delete" {
     name = "SAPScaleDown-Delete"
     location = var.location
-    resource_group_name = azurerm_resource_group.scaling-rg.name
+    resource_group_name = data.azurerm_resource_group.scaling-rg.name
     automation_account_name = azurerm_automation_account.scalingaccount.name
     runbook_type = "PowerShell"
     log_progress = "true"
@@ -91,7 +82,7 @@ resource "azurerm_automation_runbook" "scaledown-deregister" {
     depends_on = [azurerm_template_deployment.logicapp-sapregister]
     name = "SAPScaleDown-Degister"
     location = var.location
-    resource_group_name = azurerm_resource_group.scaling-rg.name
+    resource_group_name = data.azurerm_resource_group.scaling-rg.name
     automation_account_name = azurerm_automation_account.scalingaccount.name
     runbook_type = "PowerShell"
     log_progress = "true"
@@ -105,7 +96,7 @@ resource "azurerm_automation_runbook" "scaledown-deregister" {
 
 resource "azurerm_storage_account" "scalingstorageaccount" {
     name  = var.storageaccount
-    resource_group_name = azurerm_resource_group.scaling-rg.name
+    resource_group_name = data.azurerm_resource_group.scaling-rg.name
     location = var.location
     account_tier = "Standard"
     account_replication_type = "LRS"
@@ -122,7 +113,7 @@ resource "azurerm_storage_blob" "scalingscripts1" {
     storage_account_name = azurerm_storage_account.scalingstorageaccount.name
     storage_container_name = azurerm_storage_container.scalingartifacts.name
     type = "Block"
-    source  = "./scalingartifacts/SAPSetupScripts/appserver_install.sh"
+    source  = "./scalingartifacts/SAPSetupScripts/appserver_setup.sh"
 }
 
 resource "azurerm_storage_blob" "scalingscripts2" {
@@ -182,28 +173,9 @@ resource "azurerm_storage_table_entity" "config" {
            }
 }
 
-resource "azurerm_template_deployment" "logicapp-datacoll" {
-    name = "LogicAppDataCollDeployment"
-    resource_group_name = azurerm_resource_group.scaling-rg.name
-    template_body = file("logicapp_datacoll_deploy.json")
-    parameters = {
-        "LogicAppLocation" = var.location
-        "LogicAppName" = var.logicapp-datacoll
-        "RecurrenceInterval" = var.datacollectioninterval
-        "LogAnalyticsWorkspaceId" = azurerm_log_analytics_workspace.sap-log.workspace_id
-        "LogAnalyticsWorkspaceKey" = azurerm_log_analytics_workspace.sap-log.primary_shared_key
-        "LogAnalyticsConnectionName" = "SapLogAnalyticsApiConn"
-        "SAPUser" = var.sapodatauser
-        "SAPPassword" = var.sapodatapasswd
-        "SAPOdataUri" = var.sapodatauri
-        "SAPSystemID" = var.sapsid   
-    }
-    deployment_mode = "Incremental"
-}
-
 resource "azurerm_template_deployment" "logicapp-sapregister" {
     name = "LogicAppSapRegisterDeployment"
-    resource_group_name = azurerm_resource_group.scaling-rg.name
+    resource_group_name = data.azurerm_resource_group.scaling-rg.name
     template_body = file("logicapp_sapregister_deploy.json")
     parameters = {
         "LogicAppLocation" = var.location

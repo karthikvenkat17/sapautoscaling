@@ -46,6 +46,12 @@
     Exit 1
     }
 
+    ## Preventing wrong entry in scaling config from deleting all app servers
+    if ($TargetAppServerCount -lt 2) {
+    Write-Output "Target App Server Count is lower than 2. Check config table entries. Exiting"
+    Exit 1
+    }
+
     Write-Output "Decreasing app server count from $scalingconfig.CurrentAppCount to $TargetAppServerCount"
 
     for ($i = $scalingconfig.CurrentAppCount; $i -gt $TargetAppServerCount; $i--) {

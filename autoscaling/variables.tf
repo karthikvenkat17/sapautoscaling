@@ -10,17 +10,11 @@ variable "storageaccount" {
 variable "automationaccount" {
     description = "Name of the Azure Automation account to be used for SAP autoscaling runbooks"
 }
-variable "logicapp-datacoll" {
-    description = "Name of the Logic app to be used for SAP data collection"
-}
 variable "logicapp-sapregister" {
     description = "Name of the Logic App to be used for SAP logon group registration"
 }
 variable "sapsid" {
     description = "SAP SystemID"
-}
-variable "loganalyticsworkspace" {
-    description = "Log Analytics workspace to be used for SAP metrics collection"
 }
 variable "alertrecepient" { 
     description = "Email recepient for alerts generated and Logic app notification"
@@ -35,28 +29,14 @@ variable "odgresourcegroup" {
 variable "odglocation" {
     description = "On-prem data gateway location"
 }
-variable "datacollectioninterval" {
-        type = number
-    description = "SAP performance Data collection interval in minutes"
-}
-variable "sapodatauri" {
-    description = "SAP Odata Url to be used for data collection by logic app"
-}
 variable "sapinstnacenr" {
     description = "SAP Instance number"
-}
-variable "sapodatauser" {
-    description = "SAP Username to be used for Odata calls"
 }
 variable "sapregisteruser" {
     description = "SAP Username to be used for logon group registration"
 }
-variable "sapodatapasswd" {
-    description = "Password for the sapregisteruser to retreive passwords of SAP users"
-}
-
 variable "sapregisterpasswd" {
-    description = "Resource group of Keyvault to retreive passwords of SAP users"
+    description = "Password for the SAP register user"
 }
 
 variable "sapclient" {
