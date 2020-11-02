@@ -1,21 +1,28 @@
 # Auto Scaling Solution
-This repository provides an approach and sample code for auto scaling SAP application servers in Azure based on SAP performance metrics.  The solution is split into 2 parts
+This repository provides an approach and sample code for auto scaling SAP application servers in Azure based on SAP performance metrics.  
+
+[Solution Overview](#solution-overview)
+[Setup Instructions](#setup-instructions)
+
+## Solution Overview
+
+Autoscaling solution discussed here is split into 2 parts
 
 [SAP Telemetry Collection](#sap-telemetry-collection)
 
 [SAP AutoScaling Solution](#sap-autoscaling-solution)
 
-## SAP telemetry collection
+### SAP telemetry collection
 
-SAP telemetry collection architecture is as shown below. Here we ingest the SAP performance metrics data from /SDF/MON_HEADER (or /SDF/SMON_HEADER depending on what is scheduled) using Logic App into a custom log table in log analytics workspace. 
+SAP telemetry collection architecture is as shown below.  In this architecture Logic App is used to ingest the SAP performance metrics data from /SDF/MON_HEADER (or /SDF/SMON_HEADER depending on what is scheduled) into a custom log table in log analytics workspace. 
 
 ![sap telemetry](images/sap_telemetry.png)
 
-Additionl details and Terraform template for deploying the solution can be found [here](telemetry/README.md)
+The Logic app is scheduled to run peridically with a recurrence trigger to pull the data from SAP based on time filter and push it into Log analytics workspace. For example if /SDF/MON collection is scheduled to run every min and logic app recurrence interval is set to 5 min, each execution of Logic app workflow will pull the data for the past 5 min. 
 
-## SAP AutoScaling Solution
+### SAP AutoScaling Solution
 
-Below is an overview of the SAP App server Scale in and Scale out architecture. Additional details and Terraform template for deploying the solution can be found [here](autoscaling/README.md)
+Below is an overview of the SAP App server Scale in and Scale out architecture. 
 
 ### SAP Application Server Scale Out Architecture 
 
@@ -38,3 +45,8 @@ Below is an overview of the SAP App server Scale in and Scale out architecture. 
 - The second runbook issues a SoftShutdown Command on the application server with a timeout fetched from config table.   
 - Once the SAP application server is successfully stopped, the corresponding Azure resources (VM, NIC and disks) are deleted from within the runbook. 
 - Finally the PS runbook updates the Current app server count in the Scaling Config table.
+
+## Setup Instructions
+
+- Steps to deploy the SAP telemetry solution discussed above using Terraform can be found [here](telemetry/README.md)
+- Steps to deploy the Autoscaling solution discussed above using Terraform can be found [here](autoscaling/README.md)
