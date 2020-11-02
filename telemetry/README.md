@@ -6,8 +6,8 @@ This folder contains Terraform template to enable SAP telemetry collection bsaed
 
 - /SDF/MON or /SDF/SMON daily monitoring is enabled in SAP system. See here for details https://wiki.scn.sap.com/wiki/display/CPP/All+about+SMON#AllaboutSMON-Purpose
 - This template uses ODATA for ingesting /sdf/mon_header table. ODATA service url is required as an input parameter for the template. Please see sample instructions [here](docs/sapodata.md) for creating the ODATA service in SAP.
-- The SAP ODATA endpoint must be reachable from the Logic app instance. 
-- Recurrence interval for Logic app instance needs to be decided. Based on this data for last 'n' minutes will be collected.  For example aa recurrence interval of 5 min on Logic app will collect data for the past 5 minutes from the /sdf/mon_header table.
+- The SAP ODATA endpoint must be reachable from the Logic app instance. For prototype public IP can be used. For production use one of the VNET integration options available for Logic App.   
+- Recurrence interval for Logic app instance needs to be decided. Based on this data for last 'n' minutes will be collected.  For example a recurrence interval of 5 min on Logic app will collect data for the past 5 minutes from the /sdf/mon_header table.
 -  As this is a prototype we use Basic authentication with SAP credentials hardcoded directly in the Logic app. In production scenario the credentials should be fetched from Keyvault and/or alternate authentication mechannism like Client certificate should be considered.
 
 ## Installation

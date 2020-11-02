@@ -1,8 +1,13 @@
 # Auto Scaling Solution
 This repository provides an approach and sample code for auto scaling SAP application servers in Azure based on SAP performance metrics.  
 
-[Solution Overview](#solution-overview)
-[Setup Instructions](#setup-instructions)
+- [Solution Overview](#solution-overview)
+- [Setup Instructions](#setup-instructions)
+
+## Disclaimer
+
+This is just a prototype to demonstrate how auto scaling of SAP application servers can be achieved in Azure. The approach and the code needs to be thoroughly tested and modified as per requirements before it can be deployed in a productive SAP environment. 
+
 
 ## Solution Overview
 
@@ -50,3 +55,4 @@ Below is an overview of the SAP App server Scale in and Scale out architecture.
 
 - Steps to deploy the SAP telemetry solution discussed above using Terraform can be found [here](telemetry/README.md)
 - Steps to deploy the Autoscaling solution discussed above using Terraform can be found [here](autoscaling/README.md)
+
