@@ -7,7 +7,7 @@ This repository provides an approach and sample code for auto scaling SAP applic
 
 ## Disclaimer
 
-This is just a prototype to demonstrate how auto scaling of SAP application servers can be achieved in Azure. The approach and the code needs to be thoroughly tested and modified as per requirements before it can be deployed in a productive SAP environment. 
+This is just a prototype to demonstrate how auto scaling of SAP application servers can be achieved in Azure. The approach and the code needs to be thoroughly tested and modified as per requirements before it can be deployed in a productive SAP environment. Also, operational aspects like error handling, security etc. needs to be considered before using it in a production SAP environment.
 
 
 ## Solution Overview
