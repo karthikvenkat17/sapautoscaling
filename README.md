@@ -3,6 +3,7 @@ This repository provides an approach and sample code for auto scaling SAP applic
 
 - [Solution Overview](#solution-overview)
 - [Setup Instructions](#setup-instructions)
+- [Additional UseCases](#additional-usecases)
 
 ## Disclaimer
 
@@ -56,3 +57,10 @@ Below is an overview of the SAP App server Scale in and Scale out architecture.
 - Steps to deploy the SAP telemetry solution discussed above using Terraform can be found [here](telemetry/README.md)
 - Steps to deploy the Autoscaling solution discussed above using Terraform can be found [here](autoscaling/README.md)
 
+## Additional UseCases
+
+- **Custom Monitoring Solution** -  Incase you would like to use a different monitoring and alerting solution (like solution manager) you can still use the above framework for auto scaling. 
+    - Import the automation automation runbooks, ARM templates and shell script located within [here] (autoscaling/scalingartifacts) in the scaling artifacts directory.
+    -  Create a webhook for the automation runbook and call it from your monitoring/alerting solution based on required threshold. 
+
+- **Periodoc Scaling** - Runbooks can be used to schedule scaling for seasonal elasticity (month-end, peak trading period etc.). Increment size for scaling is configurable (i.e. add 'n' app servers for month-end) 
