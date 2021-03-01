@@ -69,6 +69,8 @@ exit 1
 fi
 
 echo "Starting SAP app server"
+##Restart sapstartsrv for app servers to register correctly
+su - $sidadm -c "/usr/sap/${SID}/D${instancenr}/exe/sapcontrol -nr $instancenr -function StopService ${SID}"
 su - $sidadm -c "/usr/sap/${SID}/D${instancenr}/exe/sapcontrol -nr $instancenr -function StartService ${SID}"
 sleep 5
 su - $sidadm -c "/usr/sap/${SID}/D${instancenr}/exe/sapcontrol -nr $instancenr -function Start"
