@@ -41,17 +41,19 @@
 
     Write-Output "Scaling down app servers"
     $TargetAppServerCount = ($scalingconfig.CurrentAppCount - $decrementsize)
+    ## Stop scaling down below minimum app server count
     if ($TargetAppServerCount -lt $scalingconfig.MinAppCount) {
     Write-Output "Target App Server Count is lower than min app server count set in Config table. Exiting"
     Exit 1
-    }
-
+    } 
     ## Preventing wrong entry in scaling config from deleting all app servers
-    if ($TargetAppServerCount -lt 2) {
+    elseif ($TargetAppServerCount -lt 2) {
     Write-Output "Target App Server Count is lower than 2. Check config table entries. Exiting"
     Exit 1
     }
 
+    else {
+    ##Scaling down can be performed
     Write-Output "Decreasing app server count from $scalingconfig.CurrentAppCount to $TargetAppServerCount"
 
     for ($i = $scalingconfig.CurrentAppCount; $i -gt $TargetAppServerCount; $i--) {
@@ -106,6 +108,7 @@
 
         Write-Output "App server deletion runbook scheduled to run at $ScheduleTime"
     }
+}
 }
 
 catch{
